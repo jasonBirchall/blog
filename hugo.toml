@@ -1,0 +1,4 @@
+baseURL = 'https://jasonbirchall.github.io'
+languageCode = 'en-us'
+title = 'Jason Birchall'
+theme = 'ananke'
