@@ -6,4 +6,4 @@
 	url = https://gitlab.com/jmfergeau/hugo.386
 [submodule "themes/risotto"]
 	path = themes/risotto
-	url = https://github.com/joeroe/risotto
+	url = https://github.com/jasonbirchall/risotto
