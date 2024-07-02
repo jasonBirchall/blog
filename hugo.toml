@@ -1,4 +1,4 @@
 baseURL = 'https://jasonbirchall.github.io'
 languageCode = 'en-uk'
 title = 'Jason Birchall'
-theme = 'Hugo.386'
+theme = 'hugo.386'
