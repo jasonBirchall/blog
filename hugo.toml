@@ -2,32 +2,22 @@ baseURL = 'https://jasonbirchall.github.io'
 languageCode = 'en-uk'
 title = 'Jason Birchall'
 theme = 'risotto'
-[params]
+enableEmoji = true
+enableRobotsTXT = true
+DefaultContentLanguage = "en"
+enableInlineShortcodes = true
 
+[params]
+noindex = false
+rss = true
 [params.theme]
-mode = "dark-mode"
+palette = "base16-dark"
 
 # Sidebar: about/bio
-[params.about]
-#title = "danielunderwood.dev"
-#description = "My personal website"
-
 [[params.socialLinks]]
 icon = "fab fa-github"
 title = "GitHub"
 url = "https://github.com/jasonbirchall"
-
-
-[markup]
-  [markup.highlight]
-    codeFences = true
-    noClasses = true
-    style = "monokai"
-  [markup.goldmark]
-    [markup.goldmark.renderer]
-      # This is needed for <i> tags in markdown unless I can
-      # figure out how to use shortcodes there
-      unsafe = true
 
 [menu]
   [[menu.main]]
