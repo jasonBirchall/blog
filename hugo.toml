@@ -2,3 +2,29 @@ baseURL = 'https://jasonbirchall.github.io'
 languageCode = 'en-uk'
 title = 'Jason Birchall'
 theme = 'hugo.386'
+
+[menu]
+  [[menu.main]]
+    name = "Get Faster"
+    url = "/get-faster/"
+    weight = 1
+  [[menu.main]]
+    name = "Test Yourself"
+    url = "/test-yourself/"
+    weight = 2
+  [[menu.main]]
+    name = "Fill in the Gap"
+    url = "/fill-in-the-gap/"
+    weight = 3
+  [[menu.main]]
+    name = "Observe"
+    url = "/observe/"
+    weight = 4
+  [[menu.main]]
+    name = "Contribute"
+    url = "/contribute/"
+    weight = 5
+  [[menu.main]]
+    name = "Fail"
+    url = "/fail/"
+    weight = 6
