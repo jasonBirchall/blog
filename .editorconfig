@@ -1,0 +1,26 @@
+# EditorConfig — https://editorconfig.org
+# Top-most config; editors stop searching parent directories here.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+max_line_length = 100
+
+[*.py]
+indent_size = 4
+
+# Web and config files conventionally use two-space indents.
+[*.{html,css,js,json,yml,yaml,toml}]
+indent_size = 2
+
+[*.md]
+# Markdown uses trailing whitespace for hard line breaks; leave it alone.
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
