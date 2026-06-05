@@ -16,7 +16,9 @@ package = false
 
 [dependency-groups]
 dev = [
+    "pip-audit>=2.10.0",
     "pre-commit>=4.6.0",
+    "pytest>=9.0.3",
     "ruff>=0.15.16",
     "ty>=0.0.44",
 ]
@@ -50,3 +52,7 @@ docstring-code-format = true
 
 [tool.ty.environment]
 python-version = "3.12"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config"

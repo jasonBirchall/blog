@@ -1,0 +1,54 @@
+# Continuous integration. Trunk-based: runs on every push to `main` (plus
+# manual dispatch). A red `main` is fixed forward or reverted immediately.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A newer push to the same ref cancels an in-flight run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Pin uv so CI is reproducible; bump deliberately alongside the dev tools.
+  UV_VERSION: "0.11.17"
+
+jobs:
+  check:
+    runs-on: docker
+    # Forgejo-hosted Debian. Adjust to match your Codeberg runner's labels/image.
+    container:
+      image: code.forgejo.org/oci/debian:12
+    steps:
+      - name: Install OS prerequisites
+        run: apt-get update && apt-get install -y --no-install-recommends git curl ca-certificates
+
+      - name: Checkout
+        uses: https://code.forgejo.org/actions/checkout@v4
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/${UV_VERSION}/install.sh | sh
+
+      - name: Put uv on PATH
+        run: echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Install dependencies (frozen)
+        run: uv sync --frozen
+
+      - name: Lint (ruff)
+        run: uv run ruff check .
+
+      - name: Format check (ruff)
+        run: uv run ruff format --check .
+
+      - name: Type check (ty)
+        run: uv run ty check
+
+      - name: Tests (pytest)
+        run: uv run pytest
+
+      - name: Dependency audit (pip-audit)
+        run: uv run pip-audit
