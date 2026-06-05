@@ -1,0 +1,15 @@
+[project]
+name = "blog"
+version = "0.0.0"
+description = "A personal linkblog and hub, built on Django and SQLite."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [{ name = "Jason Birchall", email = "mail@jasonbirchall.dev" }]
+dependencies = []
+
+# This is an application, not a distributable package. uv manages the
+# environment from the lockfile; there is no build backend and nothing to
+# install into site-packages. Tooling config (Ruff, Ty) arrives in N0.2.
+[tool.uv]
+package = false
