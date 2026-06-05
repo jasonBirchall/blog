@@ -18,14 +18,13 @@ env:
 
 jobs:
   check:
-    runs-on: docker
-    # Forgejo-hosted Debian. Adjust to match your Codeberg runner's labels/image.
-    container:
-      image: code.forgejo.org/oci/debian:12
+    # Codeberg hosted runners use sized labels, not `docker`:
+    # codeberg-tiny (2 min) / codeberg-small (5 min) / codeberg-medium (10 min).
+    # small gives headroom for the CPython download + dependency install.
+    # The default image (ghcr.io/catthehacker/ubuntu:act-latest) ships git and
+    # curl, so no container override or apt step is needed.
+    runs-on: codeberg-small
     steps:
-      - name: Install OS prerequisites
-        run: apt-get update && apt-get install -y --no-install-recommends git curl ca-certificates
-
       - name: Checkout
         uses: https://code.forgejo.org/actions/checkout@v4
 
