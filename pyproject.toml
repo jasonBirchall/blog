@@ -10,6 +10,43 @@ dependencies = []
 
 # This is an application, not a distributable package. uv manages the
 # environment from the lockfile; there is no build backend and nothing to
-# install into site-packages. Tooling config (Ruff, Ty) arrives in N0.2.
+# install into site-packages.
 [tool.uv]
 package = false
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.0",
+    "ruff>=0.15.16",
+    "ty>=0.0.44",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+# Django migrations are generated; don't lint them by our hand-written rules.
+extend-exclude = ["**/migrations/*"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "DJ",  # flake8-django
+    "SIM", # flake8-simplify
+    "RUF", # ruff-specific rules
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["blog", "config"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ty.environment]
+python-version = "3.12"
