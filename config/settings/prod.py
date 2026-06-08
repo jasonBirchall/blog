@@ -18,7 +18,7 @@ CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = "Lax"
 
-# HSTS: one year, include subdomains, no preload (reversible — see ADR/decision).
+# HSTS: one year, include subdomains, no preload. See docs/adr/0001-hsts-no-preload.md.
 SECURE_HSTS_SECONDS = 31_536_000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = False
