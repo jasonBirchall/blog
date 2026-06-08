@@ -12,6 +12,7 @@ class DescribeRequireEnv:
         assert require_env("TEST_ENV_VAR") == "test_value"
 
     def it_fails_closed_when_the_variable_is_missing(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("EXAMPLE_KEY", raising=False)
         with pytest.raises(ImproperlyConfigured, match="EXAMPLE_KEY"):
             require_env("EXAMPLE_KEY")
 
