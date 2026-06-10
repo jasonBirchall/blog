@@ -18,6 +18,8 @@ from pygments.formatters.html import HtmlFormatter
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
 
+from blog.wikilinks import SlugIndex, wikilink_plugin
+
 _FORMATTER = HtmlFormatter(nowrap=True)
 
 
@@ -37,12 +39,17 @@ def _highlight(code: str, lang: str, _attrs: str) -> str:
     return f'<pre class="highlight"><code class="language-{lang}">{inner}</code></pre>'
 
 
-_MARKDOWN = MarkdownIt(
-    "commonmark",
-    {"html": True, "typographer": False, "highlight": _highlight},
-)
-_MARKDOWN.enable("table")
-_MARKDOWN.use(footnote_plugin)
+def _build_markdown() -> MarkdownIt:
+    md = MarkdownIt(
+        "commonmark",
+        {"html": True, "typographer": False, "highlight": _highlight},
+    )
+    md.enable("table")
+    md.use(footnote_plugin)
+    return md
+
+
+_MARKDOWN = _build_markdown()
 
 # nh3 replaces (not extends) its defaults, so this set must be exhaustive:
 # Markdown structure + Pygments/footnote markup + the hand-written inline tags.
@@ -102,7 +109,15 @@ _ALLOWED_ATTRIBUTES = {
 }
 
 
-def render_markdown(text: str) -> str:
-    """Render a Markdown body to sanitised, semantic HTML."""
-    raw_html = _MARKDOWN.render(text)
-    return nh3.clean(raw_html, tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRIBUTES)
+def render_markdown(text: str, slug_index: SlugIndex | None = None) -> str:
+    """Render a Markdown body to sanitised, semantic HTML.
+
+    When slug_index is given, [[slug]] wikilinks are resolved to anchors; an
+    unresolved slug-shaped wikilink raises UnresolvedWikilink.
+    """
+    if slug_index is None:
+        md = _MARKDOWN
+    else:
+        md = _build_markdown()
+        wikilink_plugin(md, slug_index)
+    return nh3.clean(md.render(text), tags=_ALLOWED_TAGS, attributes=_ALLOWED_ATTRIBUTES)
