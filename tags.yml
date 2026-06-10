@@ -1,0 +1,8 @@
+# Controlled tag vocabulary. A post may only use slugs listed here; unknown
+# tags fail the linter. Slugs are lowercase and hyphenated, flat (no hierarchy).
+# Display names are derived by title-casing the slug. Curate this list yourself.
+tags:
+  - python
+  - django
+  - software-engineering
+  - ports-and-adapters

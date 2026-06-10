@@ -8,6 +8,8 @@ license = "MIT"
 authors = [{ name = "Jason Birchall", email = "mail@jasonbirchall.dev" }]
 dependencies = [
     "django>=5.2,<5.3",
+    "pydantic>=2.13.4",
+    "pyyaml>=6.0.3",
     "whitenoise>=6.12.0",
 ]
 
@@ -60,6 +62,17 @@ docstring-code-format = true
 
 [tool.ty.environment]
 python-version = "3.12"
+
+# ty has no Django ORM support: managers (.objects), related managers (.add/
+# .all), and field descriptors are injected dynamically and read as unresolved.
+# The ORM-exercising tests run for real (pytest catches genuine typos), so
+# suppress just this rule there rather than littering ignores. The pure domain
+# (blog/enums.py, blog/tags.py) stays fully type-checked.
+[[tool.ty.overrides]]
+include = ["tests/integration/**"]
+
+[tool.ty.overrides.rules]
+unresolved-attribute = "ignore"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

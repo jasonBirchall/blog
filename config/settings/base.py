@@ -6,6 +6,9 @@ from .env import env_bool, env_list, require_env
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+# Controlled tag vocabulary (flat list of slugs). Source of truth for tags.
+TAG_VOCABULARY_PATH = BASE_DIR / "tags.yml"
+
 SECRET_KEY = require_env("DJANGO_SECRET_KEY")
 DEBUG = env_bool("DJANGO_DEBUG")
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS")
