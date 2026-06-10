@@ -8,7 +8,11 @@ license = "MIT"
 authors = [{ name = "Jason Birchall", email = "mail@jasonbirchall.dev" }]
 dependencies = [
     "django>=5.2,<5.3",
+    "markdown-it-py>=4.2.0",
+    "mdit-py-plugins>=0.6.1",
+    "nh3>=0.3.5",
     "pydantic>=2.13.4",
+    "pygments>=2.20.0",
     "pyyaml>=6.0.3",
     "whitenoise>=6.12.0",
 ]
