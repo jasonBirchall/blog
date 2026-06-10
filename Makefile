@@ -4,7 +4,7 @@
 .DEFAULT_GOAL := help
 MANAGE := uv run --env-file .env python manage.py
 
-.PHONY: help install run migrate test fmt lint audit check clean
+.PHONY: help install run migrate test fmt lint lint-content audit check clean
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -32,11 +32,15 @@ lint: ## Static type check (ty)
 audit: ## Scan dependencies for known vulnerabilities
 	uv run pip-audit
 
+lint-content: ## Lint the Markdown in content/
+	uv run python -m blog.lint_content content
+
 check: ## All CI gates, non-mutating — run before you push
 	uv run ruff check .
 	uv run ruff format --check .
 	uv run ty check
 	uv run pytest
+	uv run python -m blog.lint_content content
 	uv run pip-audit
 
 clean: ## Remove caches and build artefacts

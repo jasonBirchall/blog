@@ -49,5 +49,8 @@ jobs:
       - name: Tests (pytest)
         run: uv run pytest
 
+      - name: Content linter
+        run: uv run python -m blog.lint_content content
+
       - name: Dependency audit (pip-audit)
         run: uv run pip-audit
