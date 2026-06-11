@@ -79,6 +79,7 @@ include = [
   "blog/sync.py",
   "blog/search.py",
   "blog/feeds.py",
+  "blog/sitemaps.py",
   "blog/management/**",
 ]
 

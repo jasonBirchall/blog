@@ -14,6 +14,9 @@ SITE_NAME = "blog"
 SITE_DESCRIPTION = "A personal linkblog and hub."
 SITE_AUTHOR = "Jason Birchall"
 
+# robots.txt blocks these AI training crawlers entirely (good crawlers allowed).
+BLOCKED_BOTS = ["GPTBot", "ClaudeBot", "anthropic-ai", "CCBot", "Google-Extended", "Bytespider"]
+
 SECRET_KEY = require_env("DJANGO_SECRET_KEY")
 DEBUG = env_bool("DJANGO_DEBUG")
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS")
@@ -28,6 +31,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sitemaps",
     "blog",
 ]
 
