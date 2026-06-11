@@ -9,6 +9,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Controlled tag vocabulary (flat list of slugs). Source of truth for tags.
 TAG_VOCABULARY_PATH = BASE_DIR / "tags.yml"
 
+# Site metadata (used by the Atom feed). Customise these.
+SITE_NAME = "blog"
+SITE_DESCRIPTION = "A personal linkblog and hub."
+SITE_AUTHOR = "Jason Birchall"
+
 SECRET_KEY = require_env("DJANGO_SECRET_KEY")
 DEBUG = env_bool("DJANGO_DEBUG")
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS")
