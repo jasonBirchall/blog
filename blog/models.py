@@ -34,6 +34,10 @@ class Post(models.Model):
     # Derived from body_markdown on sync; left blank until then.
     body_html = models.TextField(blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=Status.DRAFT.value)
+    # Derived from body_markdown on sync (first paragraph, collapsed).
+    excerpt = models.TextField(blank=True)
+    # Soft-delete flag: a post whose source file is gone is deactivated, not deleted.
+    is_active = models.BooleanField(default=True)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
 
     class Meta:
