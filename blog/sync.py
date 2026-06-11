@@ -13,7 +13,7 @@ from pathlib import Path
 from django.db import connection, transaction
 
 from blog.enums import Status
-from blog.frontmatter import parse_document
+from blog.frontmatter import LinkFrontmatter, QuoteFrontmatter, parse_document
 from blog.linting import LintError, lint_content
 from blog.models import Post, Tag
 from blog.rendering import render_markdown
@@ -62,6 +62,25 @@ def _rebuild_search_index() -> None:
         )
 
 
+def _block_fields(frontmatter: object) -> dict[str, str]:
+    """Per-kind block columns: populated for link/quote, blank for other kinds."""
+    fields = {
+        "link_url": "",
+        "link_source": "",
+        "quote_text": "",
+        "quote_source": "",
+        "quote_url": "",
+    }
+    if isinstance(frontmatter, LinkFrontmatter):
+        fields["link_url"] = str(frontmatter.link.url)
+        fields["link_source"] = frontmatter.link.source
+    elif isinstance(frontmatter, QuoteFrontmatter):
+        fields["quote_text"] = frontmatter.quote.text
+        fields["quote_source"] = frontmatter.quote.source
+        fields["quote_url"] = str(frontmatter.quote.url) if frontmatter.quote.url else ""
+    return fields
+
+
 def _ensure_tags(slugs: Iterable[str]) -> list[Tag]:
     return [
         Tag.objects.get_or_create(slug=slug, defaults={"name": derive_tag_name(slug)})[0]
@@ -94,12 +113,14 @@ def sync_content(
                 defaults={
                     "title": frontmatter.title,
                     "date": frontmatter.date,
+                    "updated": frontmatter.updated,
                     "kind": frontmatter.kind.value,
                     "body_markdown": doc.body,
                     "body_html": _render_html(doc.body, index),
                     "excerpt": _excerpt(doc.body),
                     "status": frontmatter.status.value,
                     "is_active": True,
+                    **_block_fields(frontmatter),
                 },
             )
             post.tags.set(_ensure_tags(frontmatter.tags))

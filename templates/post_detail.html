@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }} &middot; {{ site_name }}{% endblock %}
+{% block content %}
+<article>
+  <header class="post-header">
+    <p class="post-meta">
+      <span class="kind">{{ post.kind }}</span>
+      <time datetime="{{ post.date|date:'Y-m-d' }}">{{ post.date|date:'j F Y' }}</time>
+    </p>
+    <h1>{{ post.title }}</h1>
+    {% if post.kind == "link" %}{% include "partials/link_header.html" %}{% endif %}
+    {% if post.kind == "quote" %}{% include "partials/quote_header.html" %}{% endif %}
+  </header>
+
+  <div class="post-body">
+    {{ post.body_html|safe }}
+  </div>
+
+  <footer class="post-footer">
+    {% if post.updated %}
+    <p class="updated">Updated <time datetime="{{ post.updated|date:'Y-m-d' }}">{{ post.updated|date:'j F Y' }}</time></p>
+    {% endif %}
+    {% if post.tags.all %}
+    <p class="tags">{% for tag in post.tags.all %}<a href="/tags/{{ tag.slug }}">{{ tag.slug }}</a>{% if not forloop.last %} {% endif %}{% endfor %}</p>
+    {% endif %}
+  </footer>
+</article>
+{% endblock %}

@@ -29,8 +29,15 @@ class Post(models.Model):
     # Slugs are globally unique across kinds; URLs are flat (/posts/<slug>).
     slug = models.SlugField(max_length=200, unique=True)
     date = models.DateField()
+    updated = models.DateField(null=True, blank=True)
     kind = models.CharField(max_length=10, choices=KIND_CHOICES)
     body_markdown = models.TextField()
+    # Per-kind blocks (populated by sync from frontmatter; blank for other kinds).
+    link_url = models.URLField(blank=True)
+    link_source = models.CharField(max_length=200, blank=True)
+    quote_text = models.TextField(blank=True)
+    quote_source = models.CharField(max_length=200, blank=True)
+    quote_url = models.URLField(blank=True)
     # Derived from body_markdown on sync; left blank until then.
     body_html = models.TextField(blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=Status.DRAFT.value)

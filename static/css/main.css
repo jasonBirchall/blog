@@ -153,27 +153,19 @@ td {
   border-bottom: 1px solid var(--rule);
 }
 
-th {
-  font-family: var(--sans);
-}
+th { font-family: var(--sans); }
+hr { border: 0; border-top: 1px solid var(--rule); margin: 2rem 0; }
+img { max-width: 100%; height: auto; }
 
-hr {
-  border: 0;
-  border-top: 1px solid var(--rule);
-  margin: 2rem 0;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-}
+/* Post detail: kind/date/tags metadata at the edges, body in the column. */
+.post-meta { display: flex; gap: 0.75rem; margin: 0 0 0.25rem; font-family: var(--sans); font-size: 0.85rem; color: var(--muted); }
+.kind { text-transform: uppercase; letter-spacing: 0.04em; }
+.link-to, .pull-quote { font-size: 1.1rem; }
+.post-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-family: var(--sans); font-size: 0.85rem; color: var(--muted); }
+.post-footer a { color: var(--muted); }
 
 /* Footnotes (markdown-it): small, muted, set off by a rule. */
-.footnotes {
-  font-size: 0.9rem;
-  color: var(--muted);
-  border-top: 1px solid var(--rule);
-}
+.footnotes { font-size: 0.9rem; color: var(--muted); border-top: 1px solid var(--rule); }
 
 /* Skip link: off-screen until focused. */
 .skip-link {
@@ -190,7 +182,4 @@ img {
 }
 
 /* Visible focus ring for keyboard users. */
-:focus-visible {
-  outline: 2px solid var(--link);
-  outline-offset: 2px;
-}
+:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }

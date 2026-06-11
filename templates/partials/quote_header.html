@@ -1,0 +1,4 @@
+<blockquote class="pull-quote">
+  <p>{{ post.quote_text }}</p>
+  <cite>{% if post.quote_url %}<a href="{{ post.quote_url }}" rel="noopener noreferrer">{{ post.quote_source }}</a>{% else %}{{ post.quote_source }}{% endif %}</cite>
+</blockquote>

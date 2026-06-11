@@ -53,6 +53,7 @@ class _Spine(_Strict):
     title: str
     slug: Slug
     date: datetime.date
+    updated: datetime.date | None = None
     tags: list[Slug]
     status: Status
 
