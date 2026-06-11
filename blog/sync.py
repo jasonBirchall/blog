@@ -10,7 +10,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from django.db import transaction
+from django.db import connection, transaction
 
 from blog.enums import Status
 from blog.frontmatter import parse_document
@@ -48,6 +48,18 @@ def _excerpt(body: str) -> str:
 
 def _render_html(body: str, index: SlugIndex) -> str:
     return render_markdown(body, slug_index=index)
+
+
+def _rebuild_search_index() -> None:
+    """Refresh the FTS5 table from the published, active posts (full rebuild)."""
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM post_fts")
+        cursor.execute(
+            "INSERT INTO post_fts (slug, title, body) "
+            "SELECT slug, title, body_markdown FROM blog_post "
+            "WHERE is_active = 1 AND status = %s",
+            [Status.PUBLISHED.value],
+        )
 
 
 def _ensure_tags(slugs: Iterable[str]) -> list[Tag]:
@@ -97,6 +109,7 @@ def sync_content(
         deactivated = (
             Post.objects.filter(is_active=True).exclude(slug__in=seen).update(is_active=False)
         )
+        _rebuild_search_index()
 
     return SyncReport(
         errors=[], created=created, updated=updated, deactivated=deactivated, wrote=True

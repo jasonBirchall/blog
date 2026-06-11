@@ -73,7 +73,7 @@ python-version = "3.12"
 # suppress just this rule there rather than littering ignores. The pure domain
 # (blog/enums.py, blog/tags.py) stays fully type-checked.
 [[tool.ty.overrides]]
-include = ["tests/integration/**", "blog/sync.py", "blog/management/**"]
+include = ["tests/integration/**", "blog/sync.py", "blog/search.py", "blog/management/**"]
 
 [tool.ty.overrides.rules]
 unresolved-attribute = "ignore"
