@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render
 
 
 def home(request: HttpRequest) -> HttpResponse:
-    return HttpResponse("blog — coming soon\n", content_type="text/plain; charset=utf-8")
+    return render(request, "home.html")
 
 
 def robots_txt(request: HttpRequest) -> HttpResponse:

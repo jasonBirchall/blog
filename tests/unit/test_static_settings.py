@@ -12,9 +12,13 @@ class DescribeStaticConfiguration:
         whitenoise = settings.MIDDLEWARE.index("whitenoise.middleware.WhiteNoiseMiddleware")
         assert whitenoise == security + 1
 
-    def it_uses_whitenoise_compressed_manifest_storage(self) -> None:
+    def it_uses_whitenoise_compressed_manifest_storage_in_production(self) -> None:
+        # Manifest storage is prod-only; dev/test use plain storage so {% static %}
+        # resolves without a collected manifest.
+        from config.settings import prod
+
         assert (
-            settings.STORAGES["staticfiles"]["BACKEND"]
+            prod.STORAGES["staticfiles"]["BACKEND"]
             == "whitenoise.storage.CompressedManifestStaticFilesStorage"
         )
 

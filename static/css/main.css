@@ -1,2 +1,196 @@
-/* main.css — the real stylesheet lands in N4.1 (base template + CSS).
-   Kept minimal for now so the static pipeline has something to collect. */
+/* main.css — hand-written, dark-only, text-forward. To retheme, change the
+   custom properties below and nothing else. Under 200 lines for the whole site. */
+
+:root {
+  --bg: #0e0e0e;
+  --text: #e6e6e6;
+  --muted: #9aa0a6;
+  --link: #6ea8ff;
+  --visited: #c79bff;
+  --rule: #2a2a2a;
+  --panel: #161616;
+  --measure: 70ch;
+  --serif: Georgia, Cambria, "Times New Roman", Times, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.15rem);
+  line-height: 1.6;
+}
+
+/* Reading column: a centred block with left-aligned, ragged-right text. */
+.masthead,
+main,
+.colophon {
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+main {
+  padding-block: 2rem;
+}
+
+/* Links: classic blue, underlined; visited distinct; 150ms colour fade only. */
+a {
+  color: var(--link);
+  text-decoration: underline;
+  transition: color 150ms ease;
+}
+
+a:visited {
+  color: var(--visited);
+}
+
+a:hover,
+a:focus {
+  color: var(--text);
+}
+
+/* Headings: system sans, tight, clear hierarchy. */
+h1,
+h2,
+h3 {
+  font-family: var(--sans);
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+h1 { font-size: 1.8rem; margin: 0 0 1rem; }
+h2 { font-size: 1.35rem; margin: 2rem 0 0.5rem; }
+h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+
+p,
+ul,
+ol,
+blockquote,
+pre,
+table {
+  margin: 0 0 1.1rem;
+}
+
+/* Edge metadata: masthead and colophon, muted sans, hairline rules. */
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--sans);
+}
+
+.wordmark {
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.masthead nav {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.colophon {
+  border-top: 1px solid var(--rule);
+  padding-block: 1.25rem;
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 0.85rem;
+}
+
+.colophon a {
+  color: var(--muted);
+}
+
+/* Blockquote: a quiet left rule, not a card. */
+blockquote {
+  margin-inline: 0;
+  padding-inline-start: 1rem;
+  border-inline-start: 3px solid var(--rule);
+  color: var(--muted);
+}
+
+/* Code: monospace on a faint panel, horizontal scroll. */
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+
+pre {
+  font-family: var(--mono);
+  background: var(--panel);
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+}
+
+pre code {
+  font-size: 0.85rem;
+}
+
+/* Tables: rules only, no zebra, no shadow. */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+th {
+  font-family: var(--sans);
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 2rem 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Footnotes (markdown-it): small, muted, set off by a rule. */
+.footnotes {
+  font-size: 0.9rem;
+  color: var(--muted);
+  border-top: 1px solid var(--rule);
+}
+
+/* Skip link: off-screen until focused. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 0.5rem;
+  background: var(--bg);
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--rule);
+}
+
+/* Visible focus ring for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}

@@ -10,3 +10,9 @@ import os
 os.environ.setdefault("DJANGO_SECRET_KEY", "test-insecure-key-not-for-production")
 
 from .base import *
+
+# Plain static storage so {% static %} resolves without a collected manifest.
+STORAGES = {
+    **STORAGES,
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
