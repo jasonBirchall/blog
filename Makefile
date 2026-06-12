@@ -4,7 +4,7 @@
 .DEFAULT_GOAL := help
 MANAGE := uv run --env-file .env python manage.py
 
-.PHONY: help install run migrate new promote test fmt lint lint-content audit check clean
+.PHONY: help install run migrate new promote snapshot test fmt lint lint-content audit check clean
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -24,6 +24,9 @@ new: ## Scaffold a post: make new KIND=til SLUG=my-slug
 
 promote: ## Promote a Zettel note: make promote NOTE=~/zettel/note.md
 	uv run python -m blog.cli promote $(NOTE)
+
+snapshot: ## Snapshot newly-published posts to the Wayback Machine
+	$(MANAGE) snapshot_posts
 
 test: ## Run the test suite
 	uv run pytest
