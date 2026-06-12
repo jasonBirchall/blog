@@ -81,6 +81,7 @@ include = [
   "blog/search.py",
   "blog/feeds.py",
   "blog/sitemaps.py",
+  "blog/snapshots.py",
   "blog/views.py",
   "blog/management/**",
 ]

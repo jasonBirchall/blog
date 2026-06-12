@@ -9,10 +9,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # Controlled tag vocabulary (flat list of slugs). Source of truth for tags.
 TAG_VOCABULARY_PATH = BASE_DIR / "tags.yml"
 
-# Site metadata (used by the Atom feed). Customise these.
+# Site metadata (used by the Atom feed and Wayback snapshots). Customise these.
 SITE_NAME = "blog"
 SITE_DESCRIPTION = "A personal linkblog and hub."
 SITE_AUTHOR = "Jason Birchall"
+SITE_URL = "https://jasonbirchall.dev"
 
 # robots.txt blocks these AI training crawlers entirely (good crawlers allowed).
 BLOCKED_BOTS = ["GPTBot", "ClaudeBot", "anthropic-ai", "CCBot", "Google-Extended", "Bytespider"]

@@ -45,6 +45,8 @@ class Post(models.Model):
     excerpt = models.TextField(blank=True)
     # Soft-delete flag: a post whose source file is gone is deactivated, not deleted.
     is_active = models.BooleanField(default=True)
+    # Set once the post has been snapshotted to the Wayback Machine.
+    archived = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
 
     class Meta:
