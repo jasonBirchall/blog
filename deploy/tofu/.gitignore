@@ -1,0 +1,13 @@
+# Local provider plugins and any local state.
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Real variable values and backend secrets — never commit.
+*.tfvars
+!*.tfvars.example
+backend.hcl
+
+# Commit the provider lock so versions are reproducible.
+!.terraform.lock.hcl
