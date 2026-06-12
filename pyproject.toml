@@ -5,7 +5,7 @@ description = "A personal linkblog and hub, built on Django and SQLite."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-authors = [{ name = "Jason Birchall", email = "mail@jasonbirchall.dev" }]
+authors = [{ name = "Jason Birchall", email = "me@jasonbirchall.dev" }]
 dependencies = [
     "django>=5.2,<5.3",
     "markdown-it-py>=4.2.0",
@@ -33,6 +33,9 @@ dev = [
   "pytest-django>=4.12.0",
   "ruff>=0.15.16",
   "ty>=0.0.44",
+]
+prod = [
+    "gunicorn>=26.0.0",
 ]
 
 [tool.ruff]
@@ -84,6 +87,7 @@ include = [
   "blog/snapshots.py",
   "blog/views.py",
   "blog/management/**",
+  "scripts/**",
 ]
 
 [tool.ty.overrides.rules]
