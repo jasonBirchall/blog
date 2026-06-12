@@ -164,6 +164,13 @@ img { max-width: 100%; height: auto; }
 .post-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-family: var(--sans); font-size: 0.85rem; color: var(--muted); }
 .post-footer a { color: var(--muted); }
 
+/* Home stream: reverse-chron list of entries, with pagination at the foot. */
+.stream { list-style: none; padding: 0; margin: 0; }
+.entry { margin: 0 0 2rem; }
+.entry-title { margin: 0.1rem 0 0.3rem; font-size: 1.25rem; }
+.excerpt { margin: 0; }
+.pagination { display: flex; gap: 1.5rem; align-items: baseline; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-family: var(--sans); font-size: 0.9rem; color: var(--muted); }
+
 /* Footnotes (markdown-it): small, muted, set off by a rule. */
 .footnotes { font-size: 0.9rem; color: var(--muted); border-top: 1px solid var(--rule); }
 

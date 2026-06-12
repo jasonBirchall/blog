@@ -1,6 +1,9 @@
 """End to end spec for the public home page via the django test client."""
 
+import pytest
 from django.test import Client
+
+pytestmark = pytest.mark.django_db
 
 
 class DescribeHomePage:

@@ -4,7 +4,10 @@ The preview env must never be indexed. A single env flag (IS_PREVIEW) turns on
 an X-Robots-Tag header on every response; production leaves it off.
 """
 
+import pytest
 from django.test import Client, override_settings
+
+pytestmark = pytest.mark.django_db
 
 
 class DescribePreviewIndexingHeader:

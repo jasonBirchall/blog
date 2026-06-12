@@ -25,6 +25,12 @@ def _article(html: str) -> str:
     return html[start:end]
 
 
+def _normalize(text: str) -> str:
+    # Trailing whitespace per line (and a trailing newline) are insignificant in
+    # HTML and are stripped from the committed goldens by .editorconfig.
+    return "\n".join(line.rstrip() for line in text.splitlines())
+
+
 class DescribeGoldenPostDetail:
     @pytest.mark.parametrize("source", _INPUTS, ids=lambda path: path.stem)
     def it_matches_the_committed_article(self, client: Client, source: Path) -> None:
@@ -33,4 +39,5 @@ class DescribeGoldenPostDetail:
         ).wrote
         slug = Post.objects.values_list("slug", flat=True).get()
         article = _article(client.get(f"/posts/{slug}").content.decode())
-        assert article == source.with_suffix(".html").read_text(encoding="utf-8")
+        golden = source.with_suffix(".html").read_text(encoding="utf-8")
+        assert _normalize(article) == _normalize(golden)

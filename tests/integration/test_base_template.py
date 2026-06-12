@@ -6,7 +6,10 @@ rendered page parses with zero HTML5 parse errors.
 """
 
 import html5lib
+import pytest
 from django.test import Client
+
+pytestmark = pytest.mark.django_db
 
 
 def _html(client: Client) -> str:
