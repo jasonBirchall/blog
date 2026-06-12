@@ -1,0 +1,14 @@
+{% if page.object_list %}
+<ul class="stream">
+  {% for post in page.object_list %}
+  <li class="entry">
+    <p class="post-meta"><span class="kind">{{ post.kind }}</span> <time datetime="{{ post.date|date:'Y-m-d' }}">{{ post.date|date:'j F Y' }}</time></p>
+    <h2 class="entry-title"><a href="/posts/{{ post.slug }}">{{ post.title }}</a></h2>
+    {% if post.excerpt %}<p class="excerpt">{{ post.excerpt }}</p>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% include "partials/pagination.html" %}
+{% else %}
+<p>No posts yet.</p>
+{% endif %}

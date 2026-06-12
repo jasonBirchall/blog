@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Tagged {{ tag.slug }} &middot; {{ site_name }}{% endblock %}
+{% block content %}
+  <h1>Tagged: {{ tag.slug }}</h1>
+  {% include "partials/stream.html" %}
+{% endblock %}
