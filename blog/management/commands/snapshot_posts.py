@@ -1,6 +1,6 @@
 """snapshot_posts management command (a thin adapter over blog.snapshots).
 
-Intended as a post-deploy step (wired into the deploy workflow in N6.3):
+Run by the pull-based deploy timer (N6.6) after each successful deploy:
 
     uv run python manage.py snapshot_posts
 """

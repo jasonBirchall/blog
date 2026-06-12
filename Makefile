@@ -4,7 +4,7 @@
 .DEFAULT_GOAL := help
 MANAGE := uv run --env-file .env python manage.py
 
-.PHONY: help install run migrate new promote snapshot test fmt lint lint-content audit check clean
+.PHONY: help install run migrate new promote snapshot test fmt lint lint-content golden audit check clean
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -43,6 +43,11 @@ audit: ## Scan dependencies for known vulnerabilities
 
 lint-content: ## Lint the Markdown in content/
 	uv run python -m blog.lint_content content
+
+# Regenerate golden files after an intentional renderer/template change, then
+# review the rewrite with `git diff tests/golden` before committing.
+golden: ## Regenerate golden files (tests/golden); review with git diff
+	uv run python -m scripts.golden
 
 check: ## All CI gates, non-mutating — run before you push
 	uv run ruff check .

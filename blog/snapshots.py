@@ -2,8 +2,8 @@
 
 Pings web.archive.org's Save Page Now for each published post not yet archived,
 marking it archived on success. Failures are non-fatal and logged, and the post
-is left unarchived so the next deploy retries it. The HTTP call is injected so
-it can be exercised without the network.
+is left unarchived so the next pull-based deploy (N6.6) retries it. The HTTP call
+is injected so it can be exercised without the network.
 """
 
 import logging
