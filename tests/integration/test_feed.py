@@ -1,4 +1,10 @@
-"""Integration specs for the Atom feed and its aliases."""
+"""Integration specs for the Atom feed and its aliases.
+
+Feed validity is asserted with feedparser (bozo == 0, atom10) rather than the
+W3C online feed validator named in N3.3's original DoD: the W3C service is
+network-fragile and rate-limited in CI, and the feedparser checks cover the same
+well-formedness intent. This is the recorded resolution of N3.3's DoD loose end.
+"""
 
 import feedparser
 import pytest
