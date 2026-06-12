@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Search &middot; {{ site_name }}{% endblock %}
+{% block content %}
+  <h1>Search</h1>
+  <form class="search-form" action="/search" method="get" role="search">
+    <label for="q">Search posts</label>
+    <input type="search" id="q" name="q" value="{{ query }}" autofocus>
+    <button type="submit">Search</button>
+  </form>
+  {% if query %}
+    {% if page.object_list %}
+    <p class="search-summary">{{ page.paginator.count }} result{{ page.paginator.count|pluralize }} for "{{ query }}".</p>
+    {% include "partials/stream.html" %}
+    {% else %}
+    <p>No results for "{{ query }}".</p>
+    {% endif %}
+  {% endif %}
+{% endblock %}

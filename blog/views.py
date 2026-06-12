@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404, render
 
 from blog.enums import Status
 from blog.models import Post, Tag
+from blog.search import search_posts
 
 _PAGE_SIZE = 20
 _PUBLISHED = Q(is_active=True, status=Status.PUBLISHED.value)
@@ -18,6 +19,17 @@ def _published_posts():
 def home(request: HttpRequest) -> HttpResponse:
     page = Paginator(_published_posts(), _PAGE_SIZE).get_page(request.GET.get("page"))
     return render(request, "home.html", {"page": page})
+
+
+def search(request: HttpRequest) -> HttpResponse:
+    query = request.GET.get("q", "").strip()
+    posts: list[Post] = []
+    if query:
+        ranked = [result.slug for result in search_posts(query, limit=50)]
+        by_slug = Post.objects.filter(_PUBLISHED, slug__in=ranked).in_bulk(field_name="slug")
+        posts = [by_slug[slug] for slug in ranked if slug in by_slug]
+    page = Paginator(posts, _PAGE_SIZE).get_page(request.GET.get("page"))
+    return render(request, "search.html", {"query": query, "page": page})
 
 
 def archive(request: HttpRequest) -> HttpResponse:

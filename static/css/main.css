@@ -180,6 +180,42 @@ img { max-width: 100%; height: auto; }
 .archive-list { list-style: none; padding: 0; }
 .archive-list time { font-family: var(--sans); font-size: 0.85rem; color: var(--muted); }
 
+/* Search: a plain GET form; results reuse the stream. */
+.search-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-family: var(--sans);
+}
+
+.search-form label {
+  position: absolute;
+  left: -9999px;
+}
+
+.search-form input,
+.search-form button {
+  padding: 0.4rem 0.7rem;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--rule);
+  font-size: 1rem;
+}
+
+.search-form input {
+  flex: 1;
+}
+
+.search-form button {
+  cursor: pointer;
+}
+
+.search-summary {
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
 /* Footnotes (markdown-it): small, muted, set off by a rule. */
 .footnotes { font-size: 0.9rem; color: var(--muted); border-top: 1px solid var(--rule); }
 
