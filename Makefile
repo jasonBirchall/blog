@@ -4,7 +4,7 @@
 .DEFAULT_GOAL := help
 MANAGE := uv run --env-file .env python manage.py
 
-.PHONY: help install run migrate test fmt lint lint-content audit check clean
+.PHONY: help install run migrate new promote test fmt lint lint-content audit check clean
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -18,6 +18,12 @@ run: ## Start the dev server on http://127.0.0.1:8787
 
 migrate: ## Apply database migrations
 	$(MANAGE) migrate
+
+new: ## Scaffold a post: make new KIND=til SLUG=my-slug
+	uv run python -m blog.cli new $(KIND) $(SLUG)
+
+promote: ## Promote a Zettel note: make promote NOTE=~/zettel/note.md
+	uv run python -m blog.cli promote $(NOTE)
 
 test: ## Run the test suite
 	uv run pytest
