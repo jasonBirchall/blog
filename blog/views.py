@@ -20,6 +20,11 @@ def home(request: HttpRequest) -> HttpResponse:
     return render(request, "home.html", {"page": page})
 
 
+def archive(request: HttpRequest) -> HttpResponse:
+    # One ordered queryset; the template regroups it by year (no extra queries).
+    return render(request, "archive.html", {"posts": _published_posts()})
+
+
 def tag_index(request: HttpRequest) -> HttpResponse:
     published_for_tag = Q(posts__is_active=True, posts__status=Status.PUBLISHED.value)
     tags = (

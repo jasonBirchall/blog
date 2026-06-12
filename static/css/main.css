@@ -176,14 +176,15 @@ img { max-width: 100%; height: auto; }
 .tag-list li { margin: 0 0 0.4rem; }
 .tag-count { font-family: var(--sans); font-size: 0.8rem; color: var(--muted); }
 
+/* Archive: dense year-grouped list, no pagination. */
+.archive-list { list-style: none; padding: 0; }
+.archive-list time { font-family: var(--sans); font-size: 0.85rem; color: var(--muted); }
+
 /* Footnotes (markdown-it): small, muted, set off by a rule. */
 .footnotes { font-size: 0.9rem; color: var(--muted); border-top: 1px solid var(--rule); }
 
 /* Skip link: off-screen until focused. */
-.skip-link {
-  position: absolute;
-  left: -9999px;
-}
+.skip-link { position: absolute; left: -9999px; }
 
 .skip-link:focus {
   left: 1rem;
