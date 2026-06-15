@@ -1,0 +1,10 @@
+# sops creation rules: files matching path_regex are encrypted to these age
+# recipients. Replace the placeholder below with YOUR age PUBLIC key.
+#
+#   age-keygen -o ~/.config/sops/age/keys.txt   # writes the key; prints "Public key: age1..."
+#
+# Paste that public key here. Keep the PRIVATE key (keys.txt) OFFLINE — never
+# in this repo. See deploy/secrets/README.md.
+creation_rules:
+  - path_regex: deploy/secrets/.*\.sops\.ya?ml$
+    age: age1REPLACE_WITH_YOUR_AGE_PUBLIC_KEY

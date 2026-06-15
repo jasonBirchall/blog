@@ -27,3 +27,12 @@ repos:
       - id: check-toml
       - id: check-merge-conflict
       - id: check-added-large-files
+
+  - repo: local
+    hooks:
+      - id: sops-encrypted
+        name: ensure sops secrets files are encrypted
+        entry: scripts/check-sops-encrypted.sh
+        language: script
+        files: '(^|/)secrets/.*\.sops\.ya?ml$'
+        exclude: '\.example$'

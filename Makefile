@@ -3,8 +3,10 @@
 
 .DEFAULT_GOAL := help
 MANAGE := uv run --env-file .env python manage.py
+SOPS_SECRETS := deploy/secrets/secrets.sops.yaml
+TOFU := tofu -chdir=deploy/tofu
 
-.PHONY: help install run migrate new promote snapshot test fmt lint lint-content golden audit check clean
+.PHONY: help install run migrate new promote snapshot test fmt lint lint-content golden audit check clean secrets-edit tofu-plan tofu-apply
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -60,3 +62,14 @@ check: ## All CI gates, non-mutating — run before you push
 clean: ## Remove caches and build artefacts
 	find . -type d -name __pycache__ -prune -exec rm -rf {} +
 	rm -rf .pytest_cache .ruff_cache .ty_cache build dist *.egg-info
+
+# --- Infra (sops + OpenTofu). See deploy/secrets/README.md. ---
+
+secrets-edit: ## Edit the encrypted secrets file in $EDITOR (sops)
+	sops $(SOPS_SECRETS)
+
+tofu-plan: ## tofu plan with secrets injected from sops as TF_VAR_*
+	sops exec-env $(SOPS_SECRETS) '$(TOFU) plan'
+
+tofu-apply: ## tofu apply with secrets injected from sops as TF_VAR_*
+	sops exec-env $(SOPS_SECRETS) '$(TOFU) apply'
