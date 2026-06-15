@@ -1,0 +1,8 @@
+# Quadlet network unit. Place in ~/.config/containers/systemd/ on the box.
+# Internal network shared by caddy, app, and litestream; only Caddy publishes to
+# the host (80/443). `podman network create blog` is generated from this.
+[Unit]
+Description=Internal network for the blog containers
+
+[Network]
+NetworkName=blog

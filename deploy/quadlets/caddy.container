@@ -1,0 +1,24 @@
+# Quadlet for Caddy. Place in ~/.config/containers/systemd/ on the box.
+# The only container publishing to the public internet (80/443).
+[Unit]
+Description=Caddy reverse proxy (TLS, deny rules, privacy logs)
+Requires=blog-network.service
+After=blog-network.service network-online.target
+
+[Container]
+# TODO (N6.4 rate-limit decision): swap to a custom xcaddy image with
+# caddy-ratelimit if /search rate limiting is kept (see Caddyfile).
+Image=docker.io/library/caddy:2-alpine
+PublishPort=80:80
+PublishPort=443:443
+Network=blog.network
+Volume=%h/srv/blog/deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro,Z
+Volume=caddy-data:/data
+Volume=caddy-config:/config
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

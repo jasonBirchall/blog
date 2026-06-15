@@ -15,6 +15,9 @@ server_type     = "cx22"      # TODO confirm
 server_location = "hel1"      # TODO confirm
 server_image    = "debian-12" # TODO confirm
 
+# Your laptop's SSH public key (public — fine to commit). For admin over the tailnet.
+ssh_authorized_key = "ssh-ed25519 AAAA... you@laptop" # TODO
+
 # --- Object Storage ---
 object_storage_endpoint = "https://hel1.your-objectstorage.com" # TODO confirm
 object_storage_region   = "hel1"

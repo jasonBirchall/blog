@@ -1,0 +1,40 @@
+{
+	# Automatic HTTPS (Let's Encrypt). Uncomment the staging CA until DNS is
+	# stable, then re-comment to get real certs.
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+	email me@jasonbirchall.dev
+
+	# Privacy (constitution): never log client IPs or User-Agents.
+	log {
+		output stdout
+		format filter {
+			wrap json
+			fields {
+				request>remote_ip delete
+				request>client_ip delete
+				request>remote_port delete
+				request>headers>User-Agent delete
+			}
+		}
+	}
+}
+
+# TODO: confirm the apex/host names.
+jasonbirchall.dev, www.jasonbirchall.dev {
+	encode zstd gzip
+
+	# Deny sensitive paths (constitution): /.git, /.env, /content, /manage.py.
+	@denied path /.git* /.env* /content* /manage.py*
+	respond @denied 404
+
+	# Rate limiting for /search (carried from N4.6's DoD). Stock Caddy has no
+	# rate_limit handler — this needs a custom image built with caddy-ratelimit
+	# (xcaddy). DECIDE in N6.4: build it and enable the block below, or judge
+	# FTS5 fast enough and amend N4.6's DoD to drop the requirement.
+	# @search path /search*
+	# rate_limit @search {
+	# 	zone search { key {remote_host}; events 30; window 1m }
+	# }
+
+	reverse_proxy app:8000
+}

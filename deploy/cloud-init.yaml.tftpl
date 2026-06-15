@@ -1,0 +1,80 @@
+#cloud-config
+# Bootstrap for the blog VPS — cloud-init is the WHOLE recipe (no Ansible).
+# Rootless Podman; SSH reachable on the tailnet only (the Hetzner firewall drops
+# public 22, and sshd is additionally bound to the tailnet address). Rendered by
+# OpenTofu templatefile() with: service_user, ssh_authorized_key,
+# tailscale_auth_key. Test on the sandbox box before trusting it (PLAN.md N6.2).
+
+users:
+  - name: ${service_user}
+    shell: /bin/bash
+    # Single-operator, tailnet-gated box: passwordless sudo for admin over SSH.
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ${ssh_authorized_key}
+
+# Keys only, no root, no passwords.
+disable_root: true
+ssh_pwauth: false
+
+package_update: true
+package_upgrade: true
+packages:
+  - podman
+  - uidmap
+  - slirp4netns
+  - fuse-overlayfs
+  - unattended-upgrades
+  - apt-listchanges
+  - curl
+  - ca-certificates
+
+write_files:
+  # Let rootless containers bind low ports (Caddy needs 80/443).
+  - path: /etc/sysctl.d/99-rootless-ports.conf
+    content: |
+      net.ipv4.ip_unprivileged_port_start=80
+
+  # SSH hardening (belt-and-braces with the cloud firewall's no-public-22).
+  - path: /etc/ssh/sshd_config.d/10-hardening.conf
+    content: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      AuthenticationMethods publickey
+
+  # unattended-upgrades: apply security updates, reboot at 04:30 if required.
+  - path: /etc/apt/apt.conf.d/52unattended-upgrades-local
+    content: |
+      Unattended-Upgrade::Automatic-Reboot "true";
+      Unattended-Upgrade::Automatic-Reboot-Time "04:30";
+      Unattended-Upgrade::Remove-Unused-Dependencies "true";
+
+  # Once Tailscale is up, bind sshd to the tailnet address (run from runcmd).
+  - path: /usr/local/sbin/bind-sshd-to-tailnet.sh
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+      ts_ip="$(tailscale ip -4 2>/dev/null || true)"
+      if [ -n "$ts_ip" ]; then
+        printf 'ListenAddress %s\n' "$ts_ip" > /etc/ssh/sshd_config.d/20-tailnet-only.conf
+        systemctl restart ssh
+      fi
+
+runcmd:
+  - sysctl --system
+  # Install Tailscale (adds its apt repo, so unattended-upgrades keeps it current).
+  - curl -fsSL https://tailscale.com/install.sh | sh
+  # Join the tailnet with the tagged, single-use auth key. Tailscale SSH is OFF
+  # on purpose — we use plain sshd (decision in PLAN.md N6.2).
+  - tailscale up --ssh=false --hostname=blog --auth-key='${tailscale_auth_key}'
+  # tailscale0 now has an address; bind sshd to it.
+  - /usr/local/sbin/bind-sshd-to-tailnet.sh
+  # Rootless Podman: linger so the service user's units run without an active login.
+  - loginctl enable-linger ${service_user}
+  - sudo -iu ${service_user} systemctl --user enable --now podman-auto-update.timer || true
+  - systemctl enable --now unattended-upgrades
+
+final_message: "blog VPS bootstrapped after $UPTIME s. Reach it over the tailnet (SSH is not on public 22)."

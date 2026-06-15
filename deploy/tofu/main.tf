@@ -39,6 +39,7 @@ resource "hcloud_server" "blog" {
   user_data = fileexists(var.cloud_init_template) ? templatefile(var.cloud_init_template, {
     tailscale_auth_key = var.tailscale_auth_key
     service_user       = var.service_user
+    ssh_authorized_key = var.ssh_authorized_key
   }) : null
 
   public_net {

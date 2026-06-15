@@ -63,6 +63,11 @@ variable "service_user" {
   default     = "blog"
 }
 
+variable "ssh_authorized_key" {
+  description = "Your laptop's SSH public key (e.g. ssh-ed25519 AAAA...), for admin over the tailnet."
+  type        = string
+}
+
 variable "cloud_init_template" {
   description = "Path to N6.2's cloud-init template (.tftpl). Left ungenerated until N6.2; user_data is null until the file exists."
   type        = string
