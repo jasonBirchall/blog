@@ -1,0 +1,17 @@
+# Fires the pull-based deploy check every two minutes (N6.6). Place in
+# ~/.config/systemd/user/ on the box and enable with:
+#   systemctl --user enable --now blog-deploy.timer
+# OnUnitActiveSec measures from when the last run finished, so a slow build
+# never overlaps the next check. Two minutes keeps the "live within five
+# minutes" SLO with headroom for the build, at half the journal/ping noise of a
+# one-minute tick; an idle tick is just a git fetch, so polling is cheap.
+[Unit]
+Description=Check origin/main for new commits and deploy
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+AccuracySec=15s
+
+[Install]
+WantedBy=timers.target

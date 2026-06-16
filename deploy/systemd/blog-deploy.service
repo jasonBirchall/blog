@@ -1,0 +1,16 @@
+# Pull-based deploy one-shot (N6.6). Place in ~/.config/systemd/user/ on the box.
+# Driven by blog-deploy.timer; not enabled directly. The EnvironmentFile (mode
+# 600, written from sops at provision time) carries HEALTHCHECKS_PING_URL and
+# any overrides (BLOG_REPO_DIR). The leading '-' makes it optional so a missing
+# file does not fail the unit — the heartbeat simply no-ops.
+[Unit]
+Description=Blog pull-based deploy (build, migrate, sync, restart)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=-%h/.config/blog/deploy.env
+ExecStart=%h/srv/blog/deploy/deploy.sh
+# A cold rebuild (no layer cache) can take a few minutes; keep headroom.
+TimeoutStartSec=900
