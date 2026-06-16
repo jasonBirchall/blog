@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from .env import env_bool, env_list, require_env
+from .env import env_bool, env_list, get_env, require_env
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -71,7 +71,8 @@ TEMPLATES = [
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        # Configurable so prod can put the DB on the Litestream volume (N6.5).
+        "NAME": get_env("DATABASE_PATH") or BASE_DIR / "db.sqlite3",
     }
 }
 

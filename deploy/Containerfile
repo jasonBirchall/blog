@@ -1,0 +1,32 @@
+# Django app image, built on-box from a repo checkout (N6.5/N6.6).
+FROM python:3.12-slim
+
+# uv for dependency installation.
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    DJANGO_SETTINGS_MODULE=config.settings.prod
+
+WORKDIR /app
+
+# Dependency layer (cached): project deps + the prod group (gunicorn), no dev.
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-default-groups --group prod --no-install-project
+
+# Application source.
+COPY . .
+
+# Bake static files (WhiteNoise compressed-manifest) into the image. The dummy
+# key is fine — collectstatic does not use it cryptographically; the real
+# SECRET_KEY arrives at runtime as a podman secret.
+RUN DJANGO_SECRET_KEY=build-only uv run --no-sync python manage.py collectstatic --noinput
+
+EXPOSE 8000
+
+# migrate / sync_content / snapshot_posts run as a one-shot in the deploy (N6.6),
+# not here — the app process is just gunicorn.
+CMD ["uv", "run", "--no-sync", "gunicorn", "config.wsgi:application", \
+     "--bind", "0.0.0.0:8000", "--workers", "3"]

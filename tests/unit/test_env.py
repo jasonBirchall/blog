@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from config.settings.env import env_bool, env_list, require_env
+from config.settings.env import env_bool, env_list, get_env, require_env
 
 
 class DescribeRequireEnv:
@@ -21,6 +21,20 @@ class DescribeRequireEnv:
     ) -> None:
         monkeypatch.setenv("EXAMPLE_KEY", "")
         assert require_env("EXAMPLE_KEY") == ""
+
+
+class DescribeGetEnv:
+    def it_returns_the_value_when_set(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("DATABASE_PATH", "/data/db.sqlite3")
+        assert get_env("DATABASE_PATH") == "/data/db.sqlite3"
+
+    def it_returns_the_default_when_unset(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("DATABASE_PATH", raising=False)
+        assert get_env("DATABASE_PATH", "fallback") == "fallback"
+
+    def it_defaults_to_none(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("DATABASE_PATH", raising=False)
+        assert get_env("DATABASE_PATH") is None
 
 
 class DescribeEnvBool:

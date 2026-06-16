@@ -1,0 +1,26 @@
+# Quadlet for the Django app. Place in ~/.config/containers/systemd/ on the box.
+# Internal only — Caddy reverse-proxies to it; never published to the host.
+[Unit]
+Description=Blog Django app (gunicorn)
+Requires=blog-network.service
+After=blog-network.service
+
+[Container]
+# Built on-box by the deploy (N6.6) from the repo checkout.
+Image=localhost/blog:latest
+Network=blog.network
+# db.sqlite3 on a named volume shared with Litestream.
+Volume=blog-db:/app/data
+Environment=DJANGO_SETTINGS_MODULE=config.settings.prod
+Environment=DJANGO_DEBUG=false
+Environment=DJANGO_ALLOWED_HOSTS=jasonbirchall.dev,www.jasonbirchall.dev
+Environment=DATABASE_PATH=/app/data/db.sqlite3
+# Secrets created from sops at provision time (N6.3), exposed as env vars.
+Secret=django_secret_key,type=env,target=DJANGO_SECRET_KEY
+
+[Service]
+Restart=always
+TimeoutStartSec=120
+
+[Install]
+WantedBy=default.target

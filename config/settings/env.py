@@ -12,6 +12,10 @@ def require_env(key: str) -> str:
         raise ImproperlyConfigured(f"Missing required environment variable: {key}") from None
 
 
+def get_env(key: str, default: str | None = None) -> str | None:
+    return os.environ.get(key, default)
+
+
 def env_bool(key: str, *, default: bool = False) -> bool:
     raw = os.environ.get(key)
     if raw is None:

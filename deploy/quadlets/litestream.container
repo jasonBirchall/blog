@@ -1,0 +1,22 @@
+# Quadlet for Litestream. Place in ~/.config/containers/systemd/ on the box.
+# Continuously replicates the SQLite DB on the shared volume to Object Storage.
+[Unit]
+Description=Litestream — replicate db.sqlite3 to Object Storage
+Requires=blog-network.service
+After=blog-network.service app.service
+
+[Container]
+Image=docker.io/litestream/litestream:0.3
+Exec=replicate
+# Same named volume as the app, so it sees the live db.sqlite3.
+Volume=blog-db:/app/data
+Volume=%h/srv/blog/deploy/litestream/litestream.yml:/etc/litestream.yml:ro,Z
+# Object Storage creds as podman secrets (N6.3); Litestream reads these env vars.
+Secret=object_storage_access_key,type=env,target=LITESTREAM_ACCESS_KEY_ID
+Secret=object_storage_secret_key,type=env,target=LITESTREAM_SECRET_ACCESS_KEY
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

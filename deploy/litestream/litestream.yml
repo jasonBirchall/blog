@@ -1,0 +1,12 @@
+# Litestream — replicate the SQLite DB to Hetzner Object Storage (S3-compatible).
+# Access keys come from LITESTREAM_ACCESS_KEY_ID / LITESTREAM_SECRET_ACCESS_KEY
+# (podman secrets, N6.3). Endpoint and bucket are non-secret — fill the TODOs.
+dbs:
+  - path: /app/data/db.sqlite3
+    replicas:
+      - type: s3
+        endpoint: https://hel1.your-objectstorage.com # TODO confirm
+        bucket: jasonbirchall-blog # TODO confirm
+        path: litestream/db.sqlite3
+        region: hel1 # TODO confirm
+        force-path-style: true
