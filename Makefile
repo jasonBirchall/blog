@@ -5,8 +5,10 @@
 MANAGE := uv run --env-file .env python manage.py
 SOPS_SECRETS := deploy/secrets/secrets.sops.yaml
 TOFU := tofu -chdir=deploy/tofu
+DEV_IMAGE := localhost/blog:dev
+DEV_DB_VOL := blog-dev-db
 
-.PHONY: help install run migrate new promote snapshot test fmt lint lint-content golden audit check clean secrets-edit tofu-plan tofu-apply
+.PHONY: help install run migrate new promote snapshot test fmt lint lint-content golden audit check clean stack-build stack stack-dev stack-clean secrets-edit tofu-plan tofu-apply
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -62,6 +64,43 @@ check: ## All CI gates, non-mutating — run before you push
 clean: ## Remove caches and build artefacts
 	find . -type d -name __pycache__ -prune -exec rm -rf {} +
 	rm -rf .pytest_cache .ruff_cache .ty_cache build dist *.egg-info
+
+# --- Local container smoke test. Reuses deploy/Containerfile (the prod image),
+#     so there is no second topology to drift. `make run` stays the daily loop;
+#     this is for "does the prod image build, boot, and serve" before deploy. ---
+
+stack-build: ## Build the production image locally (deploy/Containerfile)
+	podman build -f deploy/Containerfile -t $(DEV_IMAGE) .
+
+stack: stack-build ## Run the prod image on :8000 (migrate, sync_content, gunicorn)
+	@echo "Prod settings force HTTPS, so the browser will be redirected. Hit it with:"
+	@echo "  curl -sI -H 'X-Forwarded-Proto: https' -H 'Host: localhost' http://localhost:8000/"
+	podman run --rm -it -p 8000:8000 \
+		-v $(DEV_DB_VOL):/app/data \
+		-e DATABASE_PATH=/app/data/db.sqlite3 \
+		-e DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1 \
+		-e DJANGO_SECRET_KEY=$$(openssl rand -base64 32) \
+		$(DEV_IMAGE) \
+		sh -c "uv run --no-sync python manage.py migrate --noinput \
+			&& uv run --no-sync python manage.py sync_content \
+			&& uv run --no-sync gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2"
+
+stack-dev: stack-build ## Run the prod image with dev settings — browsable on http://127.0.0.1:8000
+	@echo "Browsable (no HTTPS redirect): http://127.0.0.1:8000  — use 127.0.0.1, not localhost (HSTS)."
+	podman run --rm -it -p 127.0.0.1:8000:8000 \
+		-v $(DEV_DB_VOL):/app/data \
+		-e DATABASE_PATH=/app/data/db.sqlite3 \
+		-e DJANGO_SETTINGS_MODULE=config.settings.dev \
+		-e DJANGO_SECRET_KEY=$$(openssl rand -base64 32) \
+		$(DEV_IMAGE) \
+		sh -c "uv run --no-sync python manage.py migrate --noinput \
+			&& uv run --no-sync python manage.py sync_content \
+			&& uv run --no-sync gunicorn config.wsgi:application --bind 0.0.0.0:8000 \
+				--worker-class gthread --workers 2 --threads 4"
+
+stack-clean: ## Remove the local dev image and its database volume
+	-podman volume rm $(DEV_DB_VOL)
+	-podman rmi $(DEV_IMAGE)
 
 # --- Infra (sops + OpenTofu). See deploy/secrets/README.md. ---
 
