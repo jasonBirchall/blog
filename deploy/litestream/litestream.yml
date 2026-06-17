@@ -1,6 +1,11 @@
 # Litestream — replicate the SQLite DB to Hetzner Object Storage (S3-compatible).
 # Access keys come from LITESTREAM_ACCESS_KEY_ID / LITESTREAM_SECRET_ACCESS_KEY
 # (podman secrets, N6.3). Endpoint and bucket are non-secret — fill the TODOs.
+
+# Expose Prometheus metrics (litestream_*) on :9090 for the observability stack
+# (N6.7) to scrape over blog.network as litestream:9090.
+addr: ":9090"
+
 dbs:
   - path: /app/data/db.sqlite3
     replicas:

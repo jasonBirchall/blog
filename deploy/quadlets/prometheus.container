@@ -1,0 +1,25 @@
+# Prometheus (N6.7). Place in ~/.config/containers/systemd/. The UI is published
+# to host loopback only; expose it over the tailnet with `tailscale serve`
+# (see deploy/observability/README.md) — never on the public interface.
+[Unit]
+Description=Prometheus
+Requires=blog-network.service
+After=blog-network.service
+
+[Container]
+Image=quay.io/prometheus/prometheus:v2.54.1
+Network=blog.network
+PublishPort=127.0.0.1:9090:9090
+Volume=%h/srv/blog/deploy/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro,Z
+Volume=%h/srv/blog/deploy/observability/rules.yml:/etc/prometheus/rules.yml:ro,Z
+Volume=prometheus-data:/prometheus
+Exec=--config.file=/etc/prometheus/prometheus.yml \
+     --storage.tsdb.path=/prometheus \
+     --storage.tsdb.retention.time=30d \
+     --web.enable-lifecycle
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

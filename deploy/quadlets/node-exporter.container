@@ -1,0 +1,22 @@
+# node_exporter — host metrics (N6.7). Place in ~/.config/containers/systemd/.
+# Rootless: no host network namespace, so host stats come from a read-only bind
+# of / with --path.rootfs. Not published; Prometheus scrapes it on blog.network.
+[Unit]
+Description=node_exporter (host metrics)
+Requires=blog-network.service
+After=blog-network.service
+
+[Container]
+Image=quay.io/prometheus/node-exporter:v1.8.2
+Network=blog.network
+# Host root, read-only. SELinux relabel disabled (we must not relabel host /).
+Volume=/:/host:ro,rslave
+SecurityLabelDisable=true
+Exec=--path.rootfs=/host \
+     --collector.textfile.directory=/host/var/lib/node_exporter/textfile
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

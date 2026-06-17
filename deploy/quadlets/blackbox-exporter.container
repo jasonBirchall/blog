@@ -1,0 +1,19 @@
+# blackbox_exporter — probes the public URL through Caddy (N6.7), giving
+# end-to-end up/down and TLS cert expiry without instrumenting the app. Not
+# published; Prometheus calls its /probe on blog.network.
+[Unit]
+Description=blackbox exporter (public-URL probe)
+Requires=blog-network.service
+After=blog-network.service
+
+[Container]
+Image=quay.io/prometheus/blackbox-exporter:v0.25.0
+Network=blog.network
+Volume=%h/srv/blog/deploy/observability/blackbox.yml:/etc/blackbox/blackbox.yml:ro,Z
+Exec=--config.file=/etc/blackbox/blackbox.yml
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

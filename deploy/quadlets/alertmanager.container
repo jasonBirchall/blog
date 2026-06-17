@@ -1,0 +1,24 @@
+# Alertmanager (N6.7). Place in ~/.config/containers/systemd/. UI published to
+# host loopback only; expose over the tailnet with `tailscale serve`. The Proton
+# SMTP token is a podman secret mounted as a file (N6.3), read via
+# smtp_auth_password_file in alertmanager.yml.
+[Unit]
+Description=Alertmanager
+Requires=blog-network.service
+After=blog-network.service
+
+[Container]
+Image=quay.io/prometheus/alertmanager:v0.27.0
+Network=blog.network
+PublishPort=127.0.0.1:9093:9093
+Volume=%h/srv/blog/deploy/observability/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro,Z
+Volume=alertmanager-data:/alertmanager
+Secret=proton_smtp_token,type=mount,target=/run/secrets/proton_smtp_token
+Exec=--config.file=/etc/alertmanager/alertmanager.yml \
+     --storage.path=/alertmanager
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

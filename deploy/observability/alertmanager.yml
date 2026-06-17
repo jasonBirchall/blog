@@ -1,0 +1,42 @@
+# Alertmanager routing (N6.7). Mounted at /etc/alertmanager/alertmanager.yml.
+# Two destinations: email (everything) via Proton SMTP, and a webhook to
+# healthchecks.io for the Watchdog dead man's switch only.
+global:
+  resolve_timeout: 5m
+  # Proton SMTP. The token is a podman secret mounted as a file (N6.3); never
+  # inline it here. smtp_auth_username is the Proton account address.
+  smtp_smarthost: smtp.protonmail.ch:587
+  smtp_from: me@jasonbirchall.dev
+  smtp_auth_username: me@jasonbirchall.dev
+  smtp_auth_password_file: /run/secrets/proton_smtp_token
+  smtp_require_tls: true
+
+route:
+  receiver: email
+  group_by: [alertname]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 3h
+  routes:
+    # The Watchdog never goes to email; it drives the dead man's switch on a tight
+    # cadence so a stalled pipeline is detected within minutes.
+    - matchers:
+        - alertname = "Watchdog"
+      receiver: watchdog
+      group_wait: 0s
+      group_interval: 1m
+      repeat_interval: 1m
+
+receivers:
+  - name: email
+    email_configs:
+      - to: me@jasonbirchall.dev
+        send_resolved: true
+
+  - name: watchdog
+    webhook_configs:
+      # healthchecks.io ping URL for the Watchdog check. Semi-secret: rendered
+      # from the sops file at provision time (WATCHDOG_HEALTHCHECKS_URL), do not
+      # commit the real UUID. Configure that check's period ~5m, grace ~5m.
+      - url: https://hc-ping.com/REPLACE-WATCHDOG-UUID # TODO render at provision
+        send_resolved: false

@@ -1,0 +1,21 @@
+# prometheus-podman-exporter — per-container metrics (N6.7). Reads the rootless
+# podman socket (enable it once: `systemctl --user enable --now podman.socket`).
+# Not published; scraped on blog.network.
+[Unit]
+Description=podman exporter (container metrics)
+Requires=blog-network.service
+After=blog-network.service
+
+[Container]
+Image=quay.io/navidys/prometheus-podman-exporter:v1.12.0
+Network=blog.network
+Environment=CONTAINER_HOST=unix:///run/podman/podman.sock
+# %t is XDG_RUNTIME_DIR; that is where the rootless podman socket lives.
+Volume=%t/podman/podman.sock:/run/podman/podman.sock:ro
+SecurityLabelDisable=true
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target
