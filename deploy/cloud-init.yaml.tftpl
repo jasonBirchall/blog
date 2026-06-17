@@ -23,6 +23,9 @@ package_upgrade: true
 packages:
   - podman
   - uidmap
+  # passt provides `pasta`, Podman 5's default rootless network backend;
+  # slirp4netns is kept as the older fallback.
+  - passt
   - slirp4netns
   - fuse-overlayfs
   - unattended-upgrades
