@@ -40,14 +40,14 @@ variable "server_name" {
 }
 
 variable "server_type" {
-  # Cost-optimised shared-vCPU x86 line: CX (Intel) or CPX (AMD). cx22 is
-  # 2 vCPU / 4 GB / 40 GB. Staying x86 keeps the container stack unchanged (no
-  # arm64 image audit). Resizing within a line (e.g. cx22 -> cx32, 8 GB) is an
-  # in-place reboot, not a rebuild — start small and grow if the observability
-  # stack needs headroom. (CAX/Arm64 is cheaper still but would need arm64 images.)
-  description = "Hetzner server type (cost-optimised x86 shared vCPU: CX/CPX)."
+  # The already-running box is a CPX22 (AMD, cost-optimised shared-vCPU x86) that
+  # we import rather than recreate (see README). For the import to plan cleanly,
+  # this MUST match the box's real type exactly — confirm with
+  # `hcloud server describe <name>` (the Type field). x86 keeps the container
+  # stack unchanged (no arm64 image audit).
+  description = "Hetzner server type. Must match the imported box's real type."
   type        = string
-  default     = "cx22"
+  default     = "cpx22"
 }
 
 variable "server_location" {
@@ -57,9 +57,11 @@ variable "server_location" {
 }
 
 variable "server_image" {
+  # The running box is debian-13. image is in the server's ignore_changes (an
+  # adopted box's image is immutable/force-new), so this is documentation only.
   description = "Hetzner image."
   type        = string
-  default     = "debian-12"
+  default     = "debian-13"
 }
 
 variable "service_user" {
@@ -110,29 +112,5 @@ variable "dns_zone" {
   type        = string
 }
 
-# Proton mail records — DO NOT DISTURB. Import the EXISTING records into state
-# before the first apply, then set these to match reality exactly so plan is a
-# no-op. See README. TODO: paste the real values.
-variable "proton_mx_records" {
-  description = "Proton MX records, e.g. [\"10 mail.protonmail.ch.\", \"20 mailsec.protonmail.ch.\"]."
-  type        = list(string)
-  default     = []
-}
-
-variable "proton_spf_record" {
-  description = "Proton SPF TXT value, e.g. \"v=spf1 include:_spf.protonmail.ch ~all\"."
-  type        = string
-  default     = ""
-}
-
-variable "proton_dmarc_record" {
-  description = "DMARC TXT value, e.g. \"v=DMARC1; p=quarantine\"."
-  type        = string
-  default     = ""
-}
-
-variable "proton_dkim_cnames" {
-  description = "Proton DKIM CNAMEs as { name => target }, e.g. { \"protonmail._domainkey\" = \"...\" } (Proton usually issues three)."
-  type        = map(string)
-  default     = {}
-}
+# Mail records (Proton MX/SPF/DKIM/DMARC) are intentionally not managed by tofu —
+# they live in Gandi and are left untouched. See main.tf's DNS section.

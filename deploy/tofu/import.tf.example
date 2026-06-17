@@ -1,0 +1,40 @@
+# Importing existing infrastructure into state (OpenTofu import blocks).
+#
+# Adopt the already-running CPX22 box and its apex DNS records WITHOUT recreating
+# them — no new server, no new charge, current pricing preserved. `import` only
+# writes a resource's real ID into state; it never creates or destroys.
+#
+# This is a *.tf.example so tofu ignores it. To use:
+#   cp import.tf.example import.tf
+#   # fill the server ID
+#   tofu plan
+#     # Expect: the 3 imports below, 0 to change, 0 to destroy. The firewall and
+#     # (usually) the bucket DON'T exist yet, so they show as adds — that's fine.
+#     # "must be replaced" or a resize -> a force-new attr or server_type still
+#     # mismatches the real box; fix it. prevent_destroy hard-errors before any
+#     # rebuild, so the box is safe regardless.
+#   tofu apply
+#   rm import.tf   # state now owns these; the blocks have done their job
+
+import {
+  to = hcloud_server.blog
+  id = "TODO-NUMERIC-SERVER-ID" # hcloud server list
+}
+
+# The apex records already point at this box, so importing them makes the plan a
+# no-op for DNS (record value == box IP) — no cutover, no downtime. Gandi import
+# id format is "<zone>/<name>/<type>".
+import {
+  to = gandi_livedns_record.apex_a
+  id = "jasonbirchall.dev/@/A"
+}
+import {
+  to = gandi_livedns_record.apex_aaaa
+  id = "jasonbirchall.dev/@/AAAA"
+}
+
+# --- Only if the Object Storage bucket already exists (else let tofu create it) ---
+# import {
+#   to = aws_s3_bucket.data
+#   id = "TODO-BUCKET-NAME"
+# }

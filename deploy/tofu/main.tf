@@ -51,6 +51,16 @@ resource "hcloud_server" "blog" {
     role       = "blog"
     managed_by = "opentofu"
   }
+
+  # We adopt the already-running CPX22 via `tofu import` (see README), so never
+  # let a plan replace it — replacement means a new box at new pricing plus data
+  # loss. prevent_destroy turns any such plan into a hard error. user_data and
+  # image are force-new attributes the running box won't match (it predates this
+  # cloud-init), so ignore them rather than trigger a rebuild.
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = [user_data, image]
+  }
 }
 
 # --- Object Storage: Litestream replicas + tofu remote state. Versioning and a
@@ -101,43 +111,10 @@ resource "gandi_livedns_record" "apex_aaaa" {
   values = [hcloud_server.blog.ipv6_address]
 }
 
-# --- DNS: Proton mail records. DO NOT DISTURB. ---
-# These already exist in the zone. IMPORT them into state before the first apply
-# (see README) and keep the values below matching reality exactly, so `tofu
-# plan` reports no change. A mistake here silently breaks mail delivery.
-
-resource "gandi_livedns_record" "mx" {
-  count  = length(var.proton_mx_records) > 0 ? 1 : 0
-  zone   = var.dns_zone
-  name   = "@"
-  type   = "MX"
-  ttl    = 10800
-  values = var.proton_mx_records
-}
-
-resource "gandi_livedns_record" "spf" {
-  count  = var.proton_spf_record != "" ? 1 : 0
-  zone   = var.dns_zone
-  name   = "@"
-  type   = "TXT"
-  ttl    = 10800
-  values = [var.proton_spf_record]
-}
-
-resource "gandi_livedns_record" "dmarc" {
-  count  = var.proton_dmarc_record != "" ? 1 : 0
-  zone   = var.dns_zone
-  name   = "_dmarc"
-  type   = "TXT"
-  ttl    = 10800
-  values = [var.proton_dmarc_record]
-}
-
-resource "gandi_livedns_record" "dkim" {
-  for_each = var.proton_dkim_cnames
-  zone     = var.dns_zone
-  name     = each.key
-  type     = "CNAME"
-  ttl      = 10800
-  values   = [each.value]
-}
+# Mail records are deliberately NOT managed here. The Proton MX/SPF/DKIM/DMARC
+# records — and the protonmail-verification TXT that shares the apex TXT with the
+# SPF value — already exist in Gandi, work, and have a high blast radius.
+# Managing them in tofu risks rewriting a multi-value TXT and breaking mail, so
+# they stay in Gandi, untouched. Only the apex A/AAAA above are tofu's to own;
+# import the existing ones before the first apply (see README) so the apply is a
+# clean value update (the go-live cutover), not a create/conflict.

@@ -9,5 +9,8 @@ crash.log
 !*.tfvars.example
 backend.hcl
 
+# Transient import file (copied from import.tf.example, deleted after apply).
+import.tf
+
 # Commit the provider lock so versions are reproducible.
 !.terraform.lock.hcl
