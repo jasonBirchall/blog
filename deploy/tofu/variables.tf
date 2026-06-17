@@ -40,9 +40,14 @@ variable "server_name" {
 }
 
 variable "server_type" {
-  description = "Hetzner server type."
+  # Cost-optimised shared-vCPU x86 line: CX (Intel) or CPX (AMD). cx22 is
+  # 2 vCPU / 4 GB / 40 GB. Staying x86 keeps the container stack unchanged (no
+  # arm64 image audit). Resizing within a line (e.g. cx22 -> cx32, 8 GB) is an
+  # in-place reboot, not a rebuild — start small and grow if the observability
+  # stack needs headroom. (CAX/Arm64 is cheaper still but would need arm64 images.)
+  description = "Hetzner server type (cost-optimised x86 shared vCPU: CX/CPX)."
   type        = string
-  default     = "cx22" # TODO: confirm the real box's type.
+  default     = "cx22"
 }
 
 variable "server_location" {
@@ -54,7 +59,7 @@ variable "server_location" {
 variable "server_image" {
   description = "Hetzner image."
   type        = string
-  default     = "debian-12" # TODO: confirm.
+  default     = "debian-12"
 }
 
 variable "service_user" {

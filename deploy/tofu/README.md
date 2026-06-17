@@ -18,8 +18,8 @@ every line of the plan before applying.
 
 ## Values you must confirm/fill (the TODOs)
 
-- [ ] **Existing box:** `server_type` (CX22?), `server_location` (hel1?),
-      `server_image` (debian-12?) — read them from the Hetzner console.
+- [ ] **Server:** `server_type` (`cx22`, cost-optimised x86 — see section
+      below), `server_location` (hel1?), `server_image` (`debian-12`).
 - [ ] **Object Storage:** `object_storage_endpoint`, `bucket_name`, and the
       access/secret keys.
 - [ ] **DNS zone:** `dns_zone`.
@@ -66,6 +66,17 @@ tofu import 'gandi_livedns_record.dkim["protonmail._domainkey"]' "<zone>/protonm
 After importing, `tofu plan` MUST show **no change** to those records. If it
 shows a diff, the variable values don't match reality — fix the values, do not
 apply. **Definition of done:** plan clean, and a test mail still arrives.
+
+## Cost-optimised instance type
+
+`server_type` defaults to `cx22`, a cost-optimised shared-vCPU **x86** instance
+(Intel CX line; the AMD CPX line is an equivalent alternative). Staying on x86:
+
+- **The container stack runs unchanged** — no arm64 image audit, no cross-arch
+  build concerns. (Hetzner's Arm64 CAX line is cheaper still, but every image
+  would then need an arm64 build.)
+- **Start small, resize in place.** `cx22` is 4 GB; `cx22 -> cx32` (8 GB) is an
+  in-place reboot, not a rebuild, if the observability stack wants headroom.
 
 ## Note on the existing sandbox box
 
