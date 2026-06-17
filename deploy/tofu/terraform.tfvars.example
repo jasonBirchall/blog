@@ -1,15 +1,12 @@
-# Copy to terraform.tfvars (git-ignored) and fill in. Secrets can instead be
-# supplied as TF_VAR_* environment variables — prefer that for the sensitive
-# ones in CI/automation.
+# Copy to terraform.tfvars (git-ignored) and fill in the NON-SECRET inputs below.
+#
+# The secret credentials — hcloud_token, gandi_pat, object_storage_access_key,
+# object_storage_secret_key, tailscale_auth_key — do NOT belong here. They live
+# encrypted in deploy/secrets/secrets.sops.yaml and are injected as TF_VAR_* by
+# `make tofu-plan` / `make tofu-apply` (sops exec-env). Keeping plaintext creds
+# out of tfvars is deliberate.
 
-# --- Credentials ---
-hcloud_token              = "REPLACE-ME"
-gandi_pat                 = "REPLACE-ME"
-object_storage_access_key = "REPLACE-ME"
-object_storage_secret_key = "REPLACE-ME"
-# tailscale_auth_key      = "tskey-auth-REPLACE-ME"   # supply at apply time once N6.2 exists
-
-# --- Server (confirm against the existing box) ---
+# --- Server (cost-optimised x86) ---
 server_name     = "blog"
 server_type     = "cx22"      # TODO confirm
 server_location = "hel1"      # TODO confirm
@@ -24,11 +21,6 @@ object_storage_region   = "hel1"
 bucket_name             = "jasonbirchall-blog" # TODO confirm/choose
 
 # --- DNS ---
+# Only the apex A/AAAA are managed by tofu (they point at the new box). Mail
+# records (Proton MX/SPF/DKIM/DMARC) and www stay in Gandi, unmanaged.
 dns_zone = "jasonbirchall.dev"
-
-# Proton mail records — paste the REAL values from Gandi, and import the existing
-# records into state before applying (see README). DO NOT DISTURB.
-proton_mx_records   = [] # TODO e.g. ["10 mail.protonmail.ch.", "20 mailsec.protonmail.ch."]
-proton_spf_record   = "" # TODO e.g. "v=spf1 include:_spf.protonmail.ch ~all"
-proton_dmarc_record = "" # TODO e.g. "v=DMARC1; p=quarantine; rua=mailto:..."
-proton_dkim_cnames  = {} # TODO e.g. { "protonmail._domainkey" = "protonmail.domainkey.d...dwx.domains.proton.ch." }
