@@ -34,10 +34,14 @@ packages:
   - ca-certificates
 
 write_files:
-  # Let rootless containers bind low ports (Caddy needs 80/443).
+  # Let rootless containers bind low ports (Caddy needs 80/443), and let sshd
+  # bind ListenAddress=<tailnet IP> even before tailscale0 has that address at
+  # boot — without ip_nonlocal_bind, sshd fails to start after a reboot and you
+  # lock yourself out (recover via the Hetzner console; see bootstrap runbook).
   - path: /etc/sysctl.d/99-rootless-ports.conf
     content: |
       net.ipv4.ip_unprivileged_port_start=80
+      net.ipv4.ip_nonlocal_bind=1
 
   # SSH hardening (belt-and-braces with the cloud firewall's no-public-22).
   - path: /etc/ssh/sshd_config.d/10-hardening.conf
