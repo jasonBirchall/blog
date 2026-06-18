@@ -78,20 +78,12 @@ resource "aws_s3_bucket_versioning" "data" {
   }
 }
 
-resource "aws_s3_bucket_lifecycle_configuration" "data" {
-  bucket = aws_s3_bucket.data.id
-
-  rule {
-    id     = "expire-noncurrent-versions"
-    status = "Enabled"
-
-    filter {} # applies to all objects in the bucket
-
-    noncurrent_version_expiration {
-      noncurrent_days = var.noncurrent_retention_days
-    }
-  }
-}
+# Noncurrent-version expiry is NOT managed here. The AWS provider's
+# aws_s3_bucket_lifecycle_configuration does a read-after-write consistency poll
+# that Hetzner Object Storage's lifecycle API doesn't satisfy, so it times out.
+# Litestream prunes old generations via its own `retention` setting; if you want
+# bucket-level noncurrent expiry too, set it out of band:
+#   aws s3api put-bucket-lifecycle-configuration --bucket <name> --lifecycle-configuration file://lifecycle.json
 
 # --- DNS: apex A/AAAA point at the box. ---
 

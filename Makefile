@@ -5,10 +5,13 @@
 MANAGE := uv run --env-file .env python manage.py
 SOPS_SECRETS := deploy/secrets/secrets.sops.yaml
 TOFU := tofu -chdir=deploy/tofu
+# Hetzner Object Storage (Ceph) rejects the AWS SDK v2 default integrity
+# checksums on PutObject (400 InvalidArgument); only send them when required.
+TOFU_S3_ENV := AWS_REQUEST_CHECKSUM_CALCULATION=when_required AWS_RESPONSE_CHECKSUM_VALIDATION=when_required
 DEV_IMAGE := localhost/blog:dev
 DEV_DB_VOL := blog-dev-db
 
-.PHONY: help install run migrate new promote snapshot test fmt lint lint-content golden audit check clean stack-build stack stack-dev stack-clean secrets-edit tofu-plan tofu-apply
+.PHONY: help install run migrate new promote snapshot test fmt lint lint-content golden audit check clean stack-build stack stack-dev stack-clean secrets-edit tofu-init tofu-plan tofu-apply
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -107,8 +110,11 @@ stack-clean: ## Remove the local dev image and its database volume
 secrets-edit: ## Edit the encrypted secrets file in $EDITOR (sops)
 	sops $(SOPS_SECRETS)
 
+tofu-init: ## tofu init against the S3 backend (checksum-safe). First run: make tofu-init MIGRATE=-migrate-state
+	$(TOFU_S3_ENV) $(TOFU) init -backend-config=backend.hcl $(MIGRATE)
+
 tofu-plan: ## tofu plan with secrets injected from sops as TF_VAR_*
-	sops exec-env $(SOPS_SECRETS) '$(TOFU) plan'
+	$(TOFU_S3_ENV) sops exec-env $(SOPS_SECRETS) '$(TOFU) plan'
 
 tofu-apply: ## tofu apply with secrets injected from sops as TF_VAR_*
-	sops exec-env $(SOPS_SECRETS) '$(TOFU) apply'
+	$(TOFU_S3_ENV) sops exec-env $(SOPS_SECRETS) '$(TOFU) apply'

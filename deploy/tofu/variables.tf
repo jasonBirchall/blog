@@ -99,12 +99,6 @@ variable "bucket_name" {
   type        = string
 }
 
-variable "noncurrent_retention_days" {
-  description = "Days to keep non-current (versioned) objects before expiry."
-  type        = number
-  default     = 30
-}
-
 # --- DNS (Gandi LiveDNS) ---
 
 variable "dns_zone" {

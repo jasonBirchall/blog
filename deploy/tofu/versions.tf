@@ -27,6 +27,10 @@ terraform {
     skip_requesting_account_id  = true
     skip_metadata_api_check     = true
     use_path_style              = true
-    encrypt                     = true
+    # Hetzner Object Storage (Ceph) rejects the AWS integrity checksum and the
+    # SSE header on PutObject (400 InvalidArgument). skip_s3_checksum drops the
+    # checksum/Content-MD5; leaving encrypt off avoids requesting SSE.
+    skip_s3_checksum = true
+    # encrypt                   = true
   }
 }
