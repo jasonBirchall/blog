@@ -39,6 +39,14 @@ packages:
   - git
 
 write_files:
+  # Force a sane umask. A restrictive umask (0177 was seen on the hand-bootstrapped
+  # box) strips the execute bit off new directories, corrupting git's object store
+  # ("insufficient permission for adding an object"). The deploy service also pins
+  # UMask=0022 for the timer's git operations.
+  - path: /etc/profile.d/00-umask.sh
+    content: |
+      umask 022
+
   # Let rootless containers bind low ports (Caddy needs 80/443), and let sshd
   # bind ListenAddress=<tailnet IP> even before tailscale0 has that address at
   # boot — without ip_nonlocal_bind, sshd fails to start after a reboot and you
