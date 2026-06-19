@@ -1,6 +1,3 @@
-# Operations hub for the blog. One-word commands so no step gets skipped.
-# Run `make` with no target to list everything.
-
 .DEFAULT_GOAL := help
 MANAGE := uv run --env-file .env python manage.py
 SOPS_SECRETS := deploy/secrets/secrets.sops.yaml
