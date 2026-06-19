@@ -22,6 +22,9 @@ package_update: true
 package_upgrade: true
 packages:
   - podman
+  # aardvark-dns: container name resolution on user networks (netavark). Without
+  # it, Caddy can't resolve `app` etc. on blog.network.
+  - aardvark-dns
   - uidmap
   # passt provides `pasta`, Podman 5's default rootless network backend;
   # slirp4netns is kept as the older fallback.
