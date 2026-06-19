@@ -188,6 +188,70 @@ End-to-end deploy test: push a trivial commit to `main`, watch it go live in ≤
 
 ---
 
+## Rebuild drill
+
+Prove this runbook on a **throwaway box** without touching prod. Isolation is the
+whole game — keep these four separate from production:
+
+- **tofu state** — create the drill box _outside_ prod tofu (`hcloud` CLI), so a
+
+    stray apply can't touch the live server.
+
+- **Tailscale hostname** — `blog-drill`, not `blog` (or it collides on the tailnet).
+- **apex DNS** — never repoint `jasonbirchall.dev`. Use a throwaway TLS name.
+- **Litestream** — skip it, or point `path:` at a `drill/` prefix; never the prod stream.
+
+### Run it
+
+```sh
+# laptop: render the cloud-init with drill values + a FRESH single-use Tailscale key
+TS_KEY='tskey-auth-…'                      # generate a new one; the sops one is consumed
+SSH_KEY="$(cat ~/.ssh/id_ed25519.pub)"
+python3 - "$TS_KEY" "$SSH_KEY" > /tmp/drill-cloud-init.yaml <<'PY'
+import sys; ts, ssh = sys.argv[1], sys.argv[2]
+t = open('deploy/cloud-init.yaml.tftpl').read()
+t = (t.replace('${tailscale_auth_key}', ts)
+      .replace('${service_user}', 'blog')
+      .replace('${ssh_authorized_key}', ssh)
+      .replace('--hostname=blog', '--hostname=blog-drill'))
+print(t)
+PY
+
+# create the box (no firewall needed — sshd is tailnet-bound; ACME needs 80/443 open)
+hcloud server create --name blog-drill --type cpx22 --image debian-13 \
+  --user-data-from-file /tmp/drill-cloud-init.yaml
+```
+
+Then **verify the OS layer** (this is the real test — cloud-init has never been run
+before; prod was hand-bootstrapped):
+
+```sh
+ssh blog@blog-drill           # tailnet SSH works?
+umask                         # 0022?
+command -v git aardvark-dns pasta && podman info >/dev/null && echo OK   # packages?
+sysctl net.ipv4.ip_unprivileged_port_start net.ipv4.ip_nonlocal_bind     # 80 and 1?
+```
+
+Then the **app stack** — follow Part 1 §3, with two drill tweaks:
+
+- After cloning, edit `~/srv/blog/deploy/caddy/Caddyfile` site address to
+  `<public-ip>.sslip.io` (resolves to the box, so ACME issues a real cert with no
+  DNS change), or use Caddy's internal CA and `curl -k`.
+- Skip the Litestream unit (the DB is derived), or set its `path: drill/db.sqlite3`.
+
+Verify: `curl -I https://<public-ip>.sslip.io` → 200. **Time the whole thing.**
+
+### Tear down
+
+```sh
+hcloud server delete blog-drill
+# then remove the blog-drill node in the Tailscale admin console
+```
+
+Update this runbook with anything that was wrong — that's what keeps it true.
+
+---
+
 ## Part 2 — Operating
 
 ### Manual deploy (bypass the timer)
