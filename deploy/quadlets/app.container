@@ -8,6 +8,10 @@ After=blog-network.service
 [Container]
 # Built on-box by the deploy (N6.6) from the repo checkout.
 Image=localhost/blog:latest
+# Explicit name so aardvark-dns resolves it as `app` on blog.network for Caddy's
+# reverse_proxy app:8000; without this the container is `systemd-app` and the
+# short name doesn't resolve.
+ContainerName=app
 Network=blog.network
 # db.sqlite3 on a named volume shared with Litestream.
 Volume=blog-db:/app/data
