@@ -36,7 +36,7 @@ there (with `sudo` only where noted).
 apt update && apt upgrade -y
 # passt provides `pasta` — Podman 5's default rootless network backend (without
 # it, `podman run` fails with "could not find pasta").
-apt install -y podman uidmap passt slirp4netns fuse-overlayfs \
+apt install -y git podman uidmap passt slirp4netns fuse-overlayfs \
                unattended-upgrades apt-listchanges curl ca-certificates
 ```
 

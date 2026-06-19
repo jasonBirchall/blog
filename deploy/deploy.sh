@@ -8,7 +8,9 @@
 set -euo pipefail
 
 REPO_DIR="${BLOG_REPO_DIR:-$HOME/srv/blog}"
-CANONICAL_REMOTE="${BLOG_REMOTE:-ssh://git@codeberg.org/jasonbirchall/blog.git}"
+# Anonymous HTTPS read (public repo): no credential on the box. Integrity comes
+# from the verify-commit signature gate below, not the transport.
+CANONICAL_REMOTE="${BLOG_REMOTE:-https://codeberg.org/jasonbirchall/blog.git}"
 IMAGE="localhost/blog:latest"
 BRANCH="main"
 HEARTBEAT_URL="${HEALTHCHECKS_PING_URL:-}"

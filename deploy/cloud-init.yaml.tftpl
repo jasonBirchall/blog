@@ -32,6 +32,8 @@ packages:
   - apt-listchanges
   - curl
   - ca-certificates
+  # git: the pull-based deploy (N6.6) clones and fetches the repo on the box.
+  - git
 
 write_files:
   # Let rootless containers bind low ports (Caddy needs 80/443), and let sshd
