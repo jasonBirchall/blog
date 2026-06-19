@@ -10,6 +10,10 @@ After=network-online.target
 
 [Service]
 Type=oneshot
+# Force a sane umask: git creates object fan-out dirs, and a restrictive umask
+# (e.g. 0177) strips their execute bit, corrupting the object store with
+# "insufficient permission for adding an object". 0022 keeps dirs traversable.
+UMask=0022
 EnvironmentFile=-%h/.config/blog/deploy.env
 ExecStart=%h/srv/blog/deploy/deploy.sh
 # A cold rebuild (no layer cache) can take a few minutes; keep headroom.
