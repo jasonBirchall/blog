@@ -7,6 +7,10 @@ After=blog-network.service app.service
 
 [Container]
 Image=docker.io/litestream/litestream:0.3
+# Explicit name + network so Prometheus (N6.7) can scrape litestream:9090; the
+# default quadlet name (systemd-litestream) wouldn't resolve via aardvark-dns.
+ContainerName=litestream
+Network=blog.network
 Exec=replicate
 # Same named volume as the app, so it sees the live db.sqlite3.
 Volume=blog-db:/app/data
