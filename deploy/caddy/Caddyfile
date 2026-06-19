@@ -19,8 +19,9 @@
 	}
 }
 
-# TODO: confirm the apex/host names.
-jasonbirchall.dev, www.jasonbirchall.dev {
+# Apex only — www.jasonbirchall.dev currently points at GitHub Pages, so Caddy
+# must not claim it (ACME for www would fail against the wrong target).
+jasonbirchall.dev {
 	encode zstd gzip
 
 	# Deny sensitive paths (constitution): /.git, /.env, /content, /manage.py.

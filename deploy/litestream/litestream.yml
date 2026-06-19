@@ -10,8 +10,8 @@ dbs:
   - path: /app/data/db.sqlite3
     replicas:
       - type: s3
-        endpoint: https://hel1.your-objectstorage.com # TODO confirm
-        bucket: jasonbirchall-blog # TODO confirm
+        endpoint: https://hel1.your-objectstorage.com
+        bucket: jasonbirchall-blog-litestream
         path: litestream/db.sqlite3
-        region: hel1 # TODO confirm
+        region: hel1
         force-path-style: true
