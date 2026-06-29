@@ -35,8 +35,8 @@ receivers:
 
   - name: watchdog
     webhook_configs:
-      # healthchecks.io ping URL for the Watchdog check. Semi-secret: rendered
-      # from the sops file at provision time (WATCHDOG_HEALTHCHECKS_URL), do not
-      # commit the real UUID. Configure that check's period ~5m, grace ~5m.
-      - url: https://hc-ping.com/REPLACE-WATCHDOG-UUID # TODO render at provision
+      # healthchecks.io ping URL for the Watchdog check, read from a podman secret
+      # (watchdog_healthchecks_url, N6.3) so the UUID stays out of git and survives
+      # the deploy timer's git reset. Configure that check's period ~5m, grace ~5m.
+      - url_file: /run/secrets/watchdog_healthchecks_url
         send_resolved: false

@@ -9,11 +9,13 @@ After=blog-network.service
 
 [Container]
 Image=quay.io/prometheus/alertmanager:v0.27.0
+ContainerName=alertmanager
 Network=blog.network
 PublishPort=127.0.0.1:9093:9093
 Volume=%h/srv/blog/deploy/observability/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro,Z
 Volume=alertmanager-data:/alertmanager
 Secret=proton_smtp_token,type=mount,target=/run/secrets/proton_smtp_token
+Secret=watchdog_healthchecks_url,type=mount,target=/run/secrets/watchdog_healthchecks_url
 Exec=--config.file=/etc/alertmanager/alertmanager.yml \
      --storage.path=/alertmanager
 

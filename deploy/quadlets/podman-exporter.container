@@ -8,6 +8,7 @@ After=blog-network.service
 
 [Container]
 Image=quay.io/navidys/prometheus-podman-exporter:v1.12.0
+ContainerName=podman-exporter
 Network=blog.network
 Environment=CONTAINER_HOST=unix:///run/podman/podman.sock
 # %t is XDG_RUNTIME_DIR; that is where the rootless podman socket lives.

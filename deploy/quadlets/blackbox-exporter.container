@@ -8,6 +8,7 @@ After=blog-network.service
 
 [Container]
 Image=quay.io/prometheus/blackbox-exporter:v0.25.0
+ContainerName=blackbox-exporter
 Network=blog.network
 Volume=%h/srv/blog/deploy/observability/blackbox.yml:/etc/blackbox/blackbox.yml:ro,Z
 Exec=--config.file=/etc/blackbox/blackbox.yml
