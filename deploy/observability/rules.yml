@@ -1,90 +1,68 @@
-# Baseline alert rules (N6.7). Mounted at /etc/prometheus/rules.yml. Thresholds
-# are conservative starting points; tune on the box. Metric names marked TODO
-# depend on the exact exporter build — confirm against /metrics before relying.
+# Alert rules. Mounted at /etc/prometheus/rules.yml. Deliberately small and
+# actionable: a solo blog, one inbox, no on-call. Every rule here is either
+# user-facing-broken or a leading indicator that needs a human — anything else is a
+# dashboard, not an alert. Annotations carry the remediation command.
 groups:
-  - name: blog-availability
+  - name: blog
     rules:
-      # Dead man's switch: always firing. Alertmanager routes it to healthchecks.io
-      # on a tight repeat; if Prometheus or Alertmanager dies, the pings stop and
-      # healthchecks alerts. Proves the whole pipeline is alive.
+      # Dead man's switch: always firing. Alertmanager pings healthchecks.io every
+      # minute; if Prometheus / Alertmanager / the box dies, the pings stop and
+      # healthchecks alerts. This is what catches "the whole stack is down" — the
+      # one failure Prometheus itself can't email about.
       - alert: Watchdog
         expr: vector(1)
         labels:
           severity: none
         annotations:
-          summary: "Watchdog — always firing; the absence of this alert is the alert."
+          summary: "Watchdog — always firing; its absence is the alert."
 
-      # A scrape target (exporter) is unreachable.
-      - alert: InstanceDown
-        expr: up == 0
-        for: 2m
-        labels:
-          severity: critical
-        annotations:
-          summary: "{{ $labels.job }} target {{ $labels.instance }} is down"
-
-      # End-to-end: the public site is not returning 2xx (covers app and Caddy).
-      # Killing the app container makes Caddy return 502 -> probe_success 0 -> alert.
+      # THE alert. The public site is not returning 2xx (covers Caddy and the app).
+      # 2m absorbs the brief app restart at the end of a deploy.
       - alert: BlogDown
         expr: probe_success{job="blackbox-http"} == 0
-        for: 1m
-        labels:
-          severity: critical
-        annotations:
-          summary: "Public site probe failing ({{ $labels.instance }})"
-
-      # Defence in depth: the app container itself is not running. TODO confirm the
-      # podman-exporter metric/label (navidys exporter exposes podman_container_*).
-      - alert: AppContainerDown
-        expr: podman_container_running{name="app"} == 0
         for: 2m
         labels:
           severity: critical
         annotations:
-          summary: "app container is not running"
+          summary: "jasonbirchall.dev is DOWN (no 2xx for 2m)"
+          description: >-
+            Public probe failing. ssh blog; systemctl --user status caddy app;
+            journalctl --user -u caddy -n 50.
 
-  - name: blog-resources
-    rules:
-      - alert: DiskSpaceLow
-        expr: |
-          node_filesystem_avail_bytes{mountpoint="/host", fstype!~"tmpfs|overlay"}
-            / node_filesystem_size_bytes{mountpoint="/host", fstype!~"tmpfs|overlay"} < 0.10
-        for: 10m
+      # A monitored component stopped being scraped — a container/exporter died. If
+      # job=litestream, off-box replication (your backups) has stopped.
+      - alert: TargetDown
+        expr: up == 0
+        for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "Less than 10% disk free on {{ $labels.instance }}"
+          summary: "{{ $labels.job }} is down (not scrapeable for 5m)"
+          description: >-
+            ssh blog; systemctl --user status {{ $labels.job }}; podman ps.
+            If job=litestream, off-box backups have paused.
 
+      # Caddy auto-renews the cert; 14 days' warning means renewal is NOT happening.
       - alert: CertExpiringSoon
-        expr: (probe_ssl_earliest_cert_expiry - time()) < 14 * 24 * 3600
+        expr: (probe_ssl_earliest_cert_expiry{job="blackbox-http"} - time()) < 14 * 86400
         for: 1h
         labels:
           severity: warning
         annotations:
-          summary: "TLS cert for {{ $labels.instance }} expires in < 14 days"
+          summary: "TLS cert expires in < 14 days"
+          description: >-
+            Caddy should auto-renew. journalctl --user -u caddy | grep -i acme.
 
-  - name: blog-data
-    rules:
-      # Litestream replication has stalled. TODO confirm the metric name/units for
-      # the installed Litestream version (e.g. litestream_replica_sync_seconds or a
-      # *_time gauge); alert when the last successful sync is too old.
-      - alert: LitestreamReplicationLag
-        expr: time() - litestream_replica_sync_timestamp_seconds > 300
-        for: 5m
-        labels:
-          severity: critical
-        annotations:
-          summary: "Litestream has not replicated in > 5 minutes"
-
-      # Deploy failure. The deploy heartbeat already pings healthchecks /fail
-      # directly (N6.6), which is the primary path. This rule is the in-cluster
-      # mirror: deploy.sh can write a node_exporter textfile metric
-      # (blog_deploy_last_success_seconds) so a stale/failed deploy also alerts
-      # here. TODO wire the textfile collector + deploy.sh emit if you want both.
-      - alert: DeployStale
-        expr: time() - blog_deploy_last_success_seconds > 86400
-        for: 10m
+      # Disk headroom: SQLite, the Litestream WAL, and on-box image builds all need
+      # space; running out breaks deploys and can corrupt the DB.
+      - alert: DiskFillingUp
+        expr: |
+          node_filesystem_avail_bytes{fstype=~"ext4|xfs|btrfs"}
+            / node_filesystem_size_bytes{fstype=~"ext4|xfs|btrfs"} < 0.15
+        for: 30m
         labels:
           severity: warning
         annotations:
-          summary: "No successful deploy in > 24h (heartbeat is the primary signal)"
+          summary: "< 15% disk free on {{ $labels.mountpoint }}"
+          description: >-
+            ssh blog; podman image prune -f; du -sh ~/srv/blog ~/.local/share/containers.
