@@ -4,28 +4,51 @@
   "timezone": "Europe/London",
   "schedule": ["before 6am on monday"],
   "labels": ["dependencies"],
+  "dependencyDashboard": true,
+  "osvVulnerabilityAlerts": true,
+  "minimumReleaseAge": "21 days",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["before 6am on the first day of the month"]
   },
   "pre-commit": { "enabled": true },
   "dockerfile": {
-    "fileMatch": ["(^|/)Containerfile$"]
+    "managerFilePatterns": ["deploy/Containerfile"]
   },
   "customManagers": [
     {
       "customType": "regex",
       "description": "Podman quadlet Image= tag pins (deploy/quadlets/*.container)",
-      "fileMatch": ["^deploy/quadlets/[^/]+\\.container$"],
+      "managerFilePatterns": ["deploy/quadlets/*.container"],
       "matchStrings": ["Image=(?<depName>[^:\\s]+):(?<currentValue>\\S+)"],
       "datasourceTemplate": "docker"
     }
   ],
   "packageRules": [
     {
-      "description": "Batch minor + patch into a single weekly PR",
-      "matchUpdateTypes": ["minor", "patch", "digest"],
-      "groupName": "minor & patch"
+      "description": "Batch minor + patch into a single PR",
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "non-major dependencies"
+    },
+    {
+      "description": "Flag major updates for careful review",
+      "matchUpdateTypes": ["major"],
+      "labels": ["dependencies", "major-update"]
+    },
+    {
+      "description": "Security fixes jump the queue and skip the stability delay",
+      "matchCategories": ["security"],
+      "labels": ["dependencies", "security"],
+      "prPriority": 10,
+      "minimumReleaseAge": "0 days"
+    },
+    {
+      "description": "Do not auto-bump the Python version — that is a deliberate change",
+      "matchManagers": ["pep621"],
+      "matchDepNames": ["python"],
+      "enabled": false
     },
     {
       "description": "The locally-built app image is not an upstream dependency",

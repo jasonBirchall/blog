@@ -1,0 +1,55 @@
+#  Opens dependency-update PRs against this Codeberg
+# repo. Config is renovate.json (managers: uv, tofu, Containerfile, pre-commit,
+# and a custom regex manager for the quadlet Image= pins).
+#
+# Requires a `RENOVATE_TOKEN` Actions secret: a Codeberg PAT with
+# repository + pull-request write.
+#
+# SIGNING: Renovate's PR commits are NOT signed by your key, but the deploy
+# verify-commit gate (ADR-0003) requires main's HEAD to be. So merge Renovate PRs
+# with a commit signed by YOUR key (git merge --squash + git commit -S), not the
+# web "Merge" button (which signs with Codeberg's key the box doesn't trust).
+name: Dependency updates
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Dry run (detect updates, open no PRs)"
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: "0 4 * * *" # daily; renovate.json's schedule gates when PRs actually land
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: ${{ forgejo.workflow }}-${{ forgejo.ref }}
+  cancel-in-progress: false
+
+jobs:
+  renovate:
+    runs-on: codeberg-small
+    steps:
+      - name: Checkout
+        uses: https://data.forgejo.org/actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      - name: Set dry-run mode
+        if: ${{ inputs.dry-run == true }}
+        run: echo "RENOVATE_DRY_RUN=full" >> "$FORGEJO_ENV"
+
+      - name: Run Renovate
+        uses: docker://ghcr.io/renovatebot/renovate@sha256:38aac6e29e09288bc3fb3b95ba9445962508a1081013144d5b6ec5a6735707b9 # 43.168.5
+        env:
+          RENOVATE_CONFIG_FILE: renovate.json
+          RENOVATE_PLATFORM: forgejo
+          RENOVATE_ENDPOINT: https://codeberg.org/api/v1/
+          RENOVATE_REPOSITORIES: ${{ forgejo.repository }}
+          RENOVATE_TOKEN: ${{ secrets.RENOVATE_TOKEN }}
+          LOG_LEVEL: info
