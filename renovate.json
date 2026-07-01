@@ -1,0 +1,36 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "Europe/London",
+  "schedule": ["before 6am on monday"],
+  "labels": ["dependencies"],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on the first day of the month"]
+  },
+  "pre-commit": { "enabled": true },
+  "dockerfile": {
+    "fileMatch": ["(^|/)Containerfile$"]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Podman quadlet Image= tag pins (deploy/quadlets/*.container)",
+      "fileMatch": ["^deploy/quadlets/[^/]+\\.container$"],
+      "matchStrings": ["Image=(?<depName>[^:\\s]+):(?<currentValue>\\S+)"],
+      "datasourceTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Batch minor + patch into a single weekly PR",
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "minor & patch"
+    },
+    {
+      "description": "The locally-built app image is not an upstream dependency",
+      "matchPackageNames": ["localhost/blog"],
+      "enabled": false
+    }
+  ]
+}
