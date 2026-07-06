@@ -1,6 +1,6 @@
 # Secrets — sops + age
 
-One encrypted file holds every secret. sops encrypts the *values* (keys stay
+One encrypted file holds every secret. sops encrypts the _values_ (keys stay
 readable), so the file is committed and `gitleaks` stays green. The age private
 key lives **offline** — that single key is the thing to guard.
 
@@ -8,10 +8,12 @@ key lives **offline** — that single key is the thing to guard.
 
 1. Install the tools (`sops`, `age`).
 2. Generate your age key and note the public key it prints:
-   ```sh
-   age-keygen -o ~/.config/sops/age/keys.txt
-   # Public key: age1....
-   ```
+
+    ```sh
+    age-keygen -o ~/.config/sops/age/keys.txt
+    # Public key: age1....
+    ```
+
 3. Put that **public** key in the repo's `.sops.yaml` (replace the placeholder).
 4. **Back up the private key offline** (`~/.config/sops/age/keys.txt`): a
    password manager or a printed copy kept somewhere separate. Lose it and every
@@ -38,6 +40,51 @@ The pre-commit hook refuses to commit it if it is not encrypted.
 - **Rotate a secret:** edit the file, re-apply tofu and/or re-provision the box
   (full procedure in the runbook, N7.4).
 
+## Adding a machine (or a second key)
+
+The gotcha up front: you can only add a recipient from a machine that can
+already decrypt the file. `sops updatekeys` re-encrypts the data key for every
+recipient, and to do that sops has to decrypt it first. A brand-new machine with
+no key can't bootstrap itself — the new key gets added _by_ an old one.
+
+So the new machine generates a key and hands its **public** half to a machine
+that already has access:
+
+1. On the new machine, make a key and note the public half:
+
+    ```sh
+    age-keygen -o ~/.config/sops/age/keys.txt   # Public key: age1newkey…
+    ```
+
+2. Add it to `.sops.yaml` next to the existing one — recipients are
+   comma-separated:
+
+    ```yaml
+    creation_rules:
+        - path_regex: deploy/secrets/.*\.sops\.ya?ml$
+          age: >-
+              age1oldkey…,
+              age1newkey…
+    ```
+
+3. On a machine that can already decrypt (or after restoring the old private key
+   there), reconcile the file to the new recipient list and commit both:
+
+    ```sh
+    sops updatekeys deploy/secrets/secrets.sops.yaml
+    git add .sops.yaml deploy/secrets/secrets.sops.yaml
+    git commit -m "secrets: add <machine> key"
+    ```
+
+Editing `.sops.yaml` on its own changes nothing — it only governs _new_
+encryptions and what `updatekeys` reconciles to. Until `updatekeys` runs, the
+file is still sealed to the old recipient only.
+
+Removing a key (lost laptop, leaked key) is the same dance: delete its line from
+`.sops.yaml`, `sops updatekeys`, commit. The old key can no longer open the
+re-encrypted file — but treat everything it ever saw as compromised and rotate
+those secret _values_ too.
+
 ## What goes where
 
 - `TF_VAR_*` keys → consumed by OpenTofu on your laptop. The two object-storage
@@ -47,7 +94,7 @@ The pre-commit hook refuses to commit it if it is not encrypted.
   litestream quadlets, N6.3; `wakatime_api_key` for the daily sync one-shot, N.7).
 - `healthchecks_ping_url` → `~/.config/blog/deploy.env` (read by `deploy.sh`, N6.6).
 - `watchdog_healthchecks_url` → rendered into `alertmanager.yml` (N6.7).
-- Non-secret tofu inputs (box type/region, bucket name, DNS zone, the *public*
+- Non-secret tofu inputs (box type/region, bucket name, DNS zone, the _public_
   Proton DNS values) do **not** belong here — keep them in `terraform.tfvars`.
 
 ## On the box — create the podman secrets (N6.3)
