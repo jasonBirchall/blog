@@ -282,6 +282,46 @@ podman run --rm --volume blog-db:/app/data \
 See `deploy/secrets/README.md` "Rotating a box secret": edit the sops file,
 `podman secret rm` + re-create on the box, restart the consumer.
 
+### SSH keys & commit signing
+
+One hardware key (YubiKey, resident FIDO2 `ed25519-sk`, plus a backup) does two
+jobs — SSH login *and* commit signing — and **three** trust lists must agree, or
+things fail *closed*:
+
+| File | Controls | Format | Failure if a key is missing |
+|---|---|---|---|
+| box `~/.ssh/authorized_keys` | who can `ssh blog` | `<keytype> <key> <comment>` | login rejected |
+| box `~/.config/blog/allowed_signers` | deploy gate — `git verify-commit` on `main`'s tip | `* <keytype> <key>` (leading `*` = any email) | `deploy refused: … not signed by an allowed key` |
+| dotfiles `ssh/allowed_signers` (+ `nix/yubikey-ssh.nix`) | local verify of your own commits; each machine's ssh/git config | git allowed_signers | `git log --show-signature`: `No principal matched` |
+
+**The rule:** every key you *sign with* must be in the box's `allowed_signers`;
+every key you *log in with* must be in its `authorized_keys`. The box uses a `*`
+principal (trust the key for any email) because commits are authored under
+several emails.
+
+**Add / rotate a key** (from a machine that can still reach the box):
+```sh
+cat ~/.ssh/<key>.pub | ssh blog 'cat >> ~/.ssh/authorized_keys'                       # login
+awk '{print "*", $1, $2}' ~/.ssh/<key>.pub | ssh blog 'cat >> ~/.config/blog/allowed_signers'  # signing
+```
+Retire an old key by removing its line from *both* files — but test the new key
+(login **and** a signed commit that deploys) before removing the old one, keeping
+a session open + the Hetzner console ready.
+
+**A new machine** needs the key material locally: plug in the YubiKey and
+`ssh-keygen -K` (pulls the resident handle); the dotfiles (`nix/yubikey-ssh.nix`
+on home-manager machines) then wire up `~/.ssh/config` + git signing.
+
+**The two failures this actually caused:**
+- *`deploy refused: … not signed by an allowed key`* — a commit signed by a key
+  the box doesn't trust (or unsigned). Even a **valid** signature fails if the key
+  isn't in `allowed_signers` (git says `No principal matched`). Fix: add the key.
+  Fail-closed by design (ADR-0003).
+- *`ssh blog` logs in with no touch* — it used the software key (still in
+  `authorized_keys` / offered by the agent), not the YubiKey. Force the hardware
+  key (`IdentityFile …id_ed25519_sk_rk`, `IdentitiesOnly yes`) and remove the
+  software key from `authorized_keys` to require a touch.
+
 ### Reach the box if Tailscale is down
 
 There is no public SSH fallback by design — use the **Hetzner web console** (VNC).
