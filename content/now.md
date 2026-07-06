@@ -4,7 +4,7 @@ slug: now
 date: 2026-07-06
 kind: note
 tags: []
-status: draft
+status: published
 ---
 
 This is a _now_ page: a snapshot of what I'm focused on at the moment, rather
