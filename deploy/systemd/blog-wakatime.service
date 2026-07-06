@@ -1,0 +1,14 @@
+# WakaTime stats sync one-shot (N.7). Place in ~/.config/systemd/user/ on the
+# box. Driven by blog-wakatime.timer; not enabled directly. Decoupled from the
+# deploy one-shot so stats refresh even when main has not moved. The script no-ops
+# cleanly if localhost/blog:latest does not exist yet (fresh box, pre-first-deploy).
+[Unit]
+Description=Blog WakaTime stats sync (daily)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/srv/blog/deploy/wakatime/sync.sh
+# One authenticated HTTPS call plus a short one-shot container; 5 min is ample.
+TimeoutStartSec=300

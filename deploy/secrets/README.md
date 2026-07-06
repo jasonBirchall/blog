@@ -42,8 +42,9 @@ The pre-commit hook refuses to commit it if it is not encrypted.
 
 - `TF_VAR_*` keys → consumed by OpenTofu on your laptop. The two object-storage
   keys are **also** needed on the box (Litestream) — see below.
-- `django_secret_key`, `proton_smtp_token`, and the object-storage keys →
-  **podman secrets** on the box (app / alertmanager / litestream quadlets, N6.3).
+- `django_secret_key`, `proton_smtp_token`, `wakatime_api_key`, and the
+  object-storage keys → **podman secrets** on the box (app / alertmanager /
+  litestream quadlets, N6.3; `wakatime_api_key` for the daily sync one-shot, N.7).
 - `healthchecks_ping_url` → `~/.config/blog/deploy.env` (read by `deploy.sh`, N6.6).
 - `watchdog_healthchecks_url` → rendered into `alertmanager.yml` (N6.7).
 - Non-secret tofu inputs (box type/region, bucket name, DNS zone, the *public*
@@ -64,11 +65,12 @@ while read -r sops_key pod_name; do
 done <<'EOF'
 django_secret_key                django_secret_key
 proton_smtp_token                proton_smtp_token
+wakatime_api_key                 wakatime_api_key
 TF_VAR_object_storage_access_key object_storage_access_key
 TF_VAR_object_storage_secret_key object_storage_secret_key
 EOF
 
-ssh blog 'podman secret ls'        # expect the 4 names
+ssh blog 'podman secret ls'        # expect the 5 names
 ```
 
 - `--extract '["…"]'` pulls one value; `tr -d '\n'` strips the trailing newline

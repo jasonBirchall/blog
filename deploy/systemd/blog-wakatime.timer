@@ -1,0 +1,17 @@
+# Fires the WakaTime sync once a day (N.7). Place in ~/.config/systemd/user/ on
+# the box and enable with:
+#   systemctl --user enable --now blog-wakatime.timer
+# Decoupled from blog-deploy.timer on purpose: deploys fire on new commits (every
+# two minutes), but stats must refresh daily regardless. RandomizedDelaySec
+# spreads the call across an hour so it never hits the API at a predictable
+# instant; Persistent catches up a run missed while the box was powered off.
+[Unit]
+Description=Daily WakaTime stats sync
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target
