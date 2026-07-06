@@ -7,4 +7,6 @@
 # in this repo. See deploy/secrets/README.md.
 creation_rules:
   - path_regex: deploy/secrets/.*\.sops\.ya?ml$
-    age: age1zzxv84tehrhklt2avxfwr4fg05p6z9l7wfjly4cfeg8tj9ffrffqqwz0a9
+    age: >-
+      age1zzxv84tehrhklt2avxfwr4fg05p6z9l7wfjly4cfeg8tj9ffrffqqwz0a9,
+      age1vhtaaa73ztk7z9r4ltn5hnpckn6y7e7ayzvtadp768ywcj2t2f4qqyjtuk
