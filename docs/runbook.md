@@ -97,6 +97,7 @@ while read -r sops_key pod_name; do
 done <<'EOF'
 django_secret_key                django_secret_key
 proton_smtp_token                proton_smtp_token
+wakatime_api_key                 wakatime_api_key
 TF_VAR_object_storage_access_key object_storage_access_key
 TF_VAR_object_storage_secret_key object_storage_secret_key
 EOF
@@ -175,6 +176,31 @@ systemctl --user enable --now blog-deploy.timer
 ```
 
 **3i. Observability (N6.7)** — see `deploy/observability/README.md` (TODO once landed).
+
+**3j. WakaTime stats sync** (the `/now` page's stats; N.7). The `wakatime_api_key`
+podman secret is already created in 3b. Create the metric directory the sync
+writes to (node-exporter reads it read-only, so it must be **writable by the
+`blog` user**), install the daily timer, and force the first run:
+
+```sh
+# metric dir — needs root to create under /var/lib, owned by the blog user
+sudo install -d -o blog -g blog -m 755 /var/lib/node_exporter/textfile
+
+cp ~/srv/blog/deploy/systemd/blog-wakatime.service \
+   ~/srv/blog/deploy/systemd/blog-wakatime.timer ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now blog-wakatime.timer
+
+systemctl --user start blog-wakatime.service                    # force the first sync
+journalctl --user -u blog-wakatime.service -n 20 --no-pager     # "sync complete; wrote …"
+cat /var/lib/node_exporter/textfile/wakatime.prom               # the freshness metric
+```
+
+The sync is **decoupled** from the deploy timer (stats refresh daily regardless
+of commits). The script no-ops cleanly if `localhost/blog:latest` doesn't exist
+yet, so ordering against 3e is not critical. The `/now` page renders the prose
+from `content/now.md` plus these stats — but it **stays 404 until `now.md` is
+`status: published`** (that flip is the go-live switch).
 
 ### 4. Verify it's live
 
@@ -281,6 +307,66 @@ podman run --rm --volume blog-db:/app/data \
 
 See `deploy/secrets/README.md` "Rotating a box secret": edit the sops file,
 `podman secret rm` + re-create on the box, restart the consumer.
+
+### Force a WakaTime sync
+
+```sh
+ssh blog 'systemctl --user start blog-wakatime.service && journalctl --user -u blog-wakatime.service -n 20 --no-pager'
+```
+
+Runs the daily sync now instead of waiting for the timer. On success it upserts
+the one `WakaSnapshot` row and bumps the freshness metric; on failure it exits
+non-zero and leaves the previous row and metric untouched — stale beats broken.
+
+### Rotate the WakaTime key
+
+Regenerate at wakatime.com/api-key, update the sops file, then swap the podman
+secret. **No app restart** is needed — the sync is a one-shot that reads the
+secret fresh each run, so the next run (or a forced one) picks up the new value:
+
+```sh
+make secrets-edit                      # set wakatime_api_key to the new value; save re-encrypts
+ssh blog 'podman secret rm wakatime_api_key'
+sops -d --extract '["wakatime_api_key"]' deploy/secrets/secrets.sops.yaml | tr -d '\n' \
+  | ssh blog 'podman secret create wakatime_api_key -'
+ssh blog 'systemctl --user start blog-wakatime.service'   # confirm the new key works
+```
+
+### The WakaTimeStale alert
+
+Fires when the last successful sync is > 48h old (`for: 1h`). 48h tolerates one
+missed daily run (a WakaTime blip); two misses means something is actually wrong.
+The page keeps serving the last snapshot with an honest "as of" date throughout —
+the alert, not a 500, is the signal. Triage:
+
+```sh
+ssh blog 'systemctl --user status blog-wakatime.service'
+ssh blog 'journalctl --user -u blog-wakatime -n 50 --no-pager'
+```
+
+Most likely a revoked/expired key (check wakatime.com/api-key; rotate above) or a
+WakaTime outage.
+
+**Rule changes need a Prometheus reload.** A deploy lands a changed `rules.yml` on
+the box but does *not* reload Prometheus (it restarts only the app). After a
+deploy that touches the rules:
+
+```sh
+ssh blog 'podman exec prometheus promtool check rules /etc/prometheus/rules.yml'  # validate
+ssh blog 'curl -sS -X POST http://127.0.0.1:9090/-/reload'                        # activate
+```
+
+**Synthetic test.** Deleting the metric file does *not* fire this alert — an
+absent metric yields no series, which correctly stays quiet (the same reason no
+`absent()` guard is needed before the first success). To exercise the firing
+path, forge an old timestamp and wait out the `for: 1h`:
+
+```sh
+ssh blog 'printf "# TYPE wakatime_last_success_timestamp_seconds gauge\nwakatime_last_success_timestamp_seconds %s\n" \
+  $(( $(date +%s) - 49*3600 )) > /var/lib/node_exporter/textfile/wakatime.prom'
+# watch Prometheus /alerts go Pending -> Firing, expect the email, then restore reality:
+ssh blog 'systemctl --user start blog-wakatime.service'
+```
 
 ### SSH keys & commit signing
 
