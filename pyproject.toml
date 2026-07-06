@@ -80,6 +80,7 @@ python-version = "3.12"
 [[tool.ty.overrides]]
 include = [
   "tests/integration/**",
+  "blog/models.py",
   "blog/sync.py",
   "blog/search.py",
   "blog/feeds.py",
