@@ -45,7 +45,7 @@ chicken-and-egg. On a first-ever apply:
 3. Restore the backend block, create `backend.hcl` (git-ignored):
 
     ```hcl
-    bucket     = "jasonbirchall-blog"
+    bucket     = "jasonbirchall-blog-litestream"
     key        = "tofu/blog.tfstate"
     region     = "hel1"
     access_key = "..."
@@ -56,6 +56,31 @@ chicken-and-egg. On a first-ever apply:
 4. `tofu init -backend-config=backend.hcl -migrate-state`.
 
 If the bucket already exists, skip steps 1–2 and just init with the backend.
+
+## Second machine (multi-device)
+
+The state already lives in the bucket, so a second device just re-creates the
+two **git-ignored** local files a fresh clone doesn't carry — `backend.hcl` (S3
+keys) and `terraform.tfvars` (non-secret inputs) — and inits against the existing
+remote state. No `-migrate-state`: that flag is only for the first-ever
+local→remote move above; here the state is already remote.
+
+Prerequisites on the new machine: `tofu`, `sops`, `age`, `uv`; and the machine's
+age key present at `~/.config/sops/age/keys.txt` **and** already a recipient of
+`deploy/secrets/secrets.sops.yaml` (the "Adding a machine" dance in
+`deploy/secrets/README.md` — done from a machine that can already decrypt).
+
+```sh
+make tofu-bootstrap   # regenerates backend.hcl from sops; copies terraform.tfvars from the example
+$EDITOR deploy/tofu/terraform.tfvars   # fill the non-secret TODOs (same values as machine 1)
+make tofu-init        # init against the remote state — NOT MIGRATE
+make tofu-plan        # sanity check: expect "No changes" if the two machines agree
+```
+
+`tofu-bootstrap` refuses to overwrite an existing `backend.hcl`/`terraform.tfvars`,
+so it is safe to re-run. Do **not** copy the `terraform.tfstate*` files between
+machines — they are stale local leftovers from the first-apply bootstrap; the
+remote state in the bucket is canonical.
 
 ## DNS: only the apex A/AAAA are managed
 
