@@ -55,6 +55,9 @@ class DescribeBaseTemplate:
     def it_ships_no_javascript(self, client: Client) -> None:
         assert "<script" not in _html(client)
 
+    def it_links_the_now_page_in_the_masthead(self, client: Client) -> None:
+        assert '<a href="/now">Now</a>' in _html(client)
+
 
 class DescribeHtml5Validity:
     def it_parses_with_no_html5_errors(self, client: Client) -> None:

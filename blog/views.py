@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from blog.enums import RESERVED_SLUGS, Status
-from blog.models import Post, Tag
+from blog.models import Post, Tag, WakaSnapshot
 from blog.search import search_posts
 
 _PAGE_SIZE = 20
@@ -61,6 +61,14 @@ def tag_detail(request: HttpRequest, slug: str) -> HttpResponse:
 def post_detail(request: HttpRequest, slug: str) -> HttpResponse:
     post = get_object_or_404(Post, slug=slug, is_active=True, status=Status.PUBLISHED.value)
     return render(request, "post_detail.html", {"post": post})
+
+
+def now(request: HttpRequest) -> HttpResponse:
+    # The page's existence is authored: 404 if content/now.md is absent or draft.
+    post = get_object_or_404(Post, slug="now", is_active=True, status=Status.PUBLISHED.value)
+    snapshot = WakaSnapshot.latest_stats()
+    stats, fetched_at = snapshot if snapshot else (None, None)
+    return render(request, "now.html", {"post": post, "stats": stats, "fetched_at": fetched_at})
 
 
 def robots_txt(request: HttpRequest) -> HttpResponse:

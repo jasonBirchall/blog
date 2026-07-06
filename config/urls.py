@@ -14,6 +14,7 @@ from blog.sitemaps import PostSitemap, StaticSitemap, TagSitemap
 from blog.views import (
     archive,
     home,
+    now,
     post_detail,
     robots_txt,
     search,
@@ -25,6 +26,7 @@ _SITEMAPS = {"posts": PostSitemap, "tags": TagSitemap, "static": StaticSitemap}
 
 urlpatterns = [
     path("", home, name="home"),
+    path("now", now, name="now"),
     # Reserved slug: wikilinks resolve [[now]] to /posts/now; redirect it to the
     # top-level page. Must precede the generic slug pattern to win the match.
     path("posts/now", RedirectView.as_view(url="/now", permanent=True)),

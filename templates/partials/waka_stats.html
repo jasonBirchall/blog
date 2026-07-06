@@ -1,0 +1,36 @@
+{% if stats %}
+<section class="now-stats" aria-labelledby="now-stats-heading">
+  <h2 id="now-stats-heading">Coding activity</h2>
+  <p class="now-stats-summary">
+    {{ stats.total_text }} over the last 7 days, about {{ stats.daily_average_text }} a day.
+    <span class="now-stats-asof">As of
+      <time datetime="{{ fetched_at|date:'Y-m-d' }}">{{ fetched_at|date:'j F Y' }}</time>.</span>
+  </p>
+
+  <h3>Languages</h3>
+  <table class="stat-bars">
+    <tbody>
+      {% for lang in stats.languages %}
+      <tr>
+        <th scope="row">{{ lang.name }}</th>
+        <td class="stat-figure">{{ lang.text }}</td>
+        <td class="stat-track"><span class="stat-bar" style="width: {{ lang.percent }}%"></span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>Projects</h3>
+  <table class="stat-bars">
+    <tbody>
+      {% for proj in stats.projects %}
+      <tr>
+        <th scope="row">{{ proj.name }}</th>
+        <td class="stat-figure">{{ proj.text }}</td>
+        <td class="stat-track"><span class="stat-bar" style="width: {{ proj.percent }}%"></span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
