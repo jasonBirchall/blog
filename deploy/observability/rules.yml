@@ -66,3 +66,20 @@ groups:
           summary: "< 15% disk free on {{ $labels.mountpoint }}"
           description: >-
             ssh blog; podman image prune -f; du -sh ~/srv/blog ~/.local/share/containers.
+
+      # The daily WakaTime sync writes wakatime_last_success_timestamp_seconds on
+      # success only. 48h tolerates one missed daily run (a WakaTime blip) without
+      # paging; two consecutive misses means something is actually wrong. Before the
+      # first ever success the metric is absent and this stays quiet, which is the
+      # correct behaviour during provisioning (no absent()-guard needed).
+      - alert: WakaTimeStale
+        expr: time() - wakatime_last_success_timestamp_seconds > 48 * 3600
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "WakaTime sync stale (> 48h since last success)"
+          description: >-
+            ssh blog; systemctl --user status blog-wakatime.service;
+            journalctl --user -u blog-wakatime -n 50. Check key validity at
+            wakatime.com/api-key; rotate per the runbook if revoked.
