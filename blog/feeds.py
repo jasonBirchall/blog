@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib.syndication.views import Feed
 from django.utils.feedgenerator import Atom1Feed
 
-from blog.enums import Status
+from blog.enums import RESERVED_SLUGS, Status
 from blog.models import Post
 
 _FEED_LIMIT = 20
@@ -41,9 +41,9 @@ class PostFeed(Feed):
 
     def items(self) -> list[Post]:
         return list(
-            Post.objects.filter(is_active=True, status=Status.PUBLISHED.value).order_by(
-                "-date", "-id"
-            )[:_FEED_LIMIT]
+            Post.objects.filter(is_active=True, status=Status.PUBLISHED.value)
+            .exclude(slug__in=RESERVED_SLUGS)
+            .order_by("-date", "-id")[:_FEED_LIMIT]
         )
 
     def item_title(self, item) -> str:

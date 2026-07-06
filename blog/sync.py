@@ -12,7 +12,7 @@ from pathlib import Path
 
 from django.db import connection, transaction
 
-from blog.enums import Status
+from blog.enums import RESERVED_SLUGS, Status
 from blog.frontmatter import LinkFrontmatter, QuoteFrontmatter, parse_document
 from blog.linting import LintError, lint_content
 from blog.models import Post, Tag
@@ -51,14 +51,16 @@ def _render_html(body: str, index: SlugIndex) -> str:
 
 
 def _rebuild_search_index() -> None:
-    """Refresh the FTS5 table from the published, active posts (full rebuild)."""
+    """Refresh the FTS5 table from the published, active, non-reserved posts."""
+    reserved = tuple(RESERVED_SLUGS)
+    placeholders = ", ".join(["%s"] * len(reserved))
     with connection.cursor() as cursor:
         cursor.execute("DELETE FROM post_fts")
         cursor.execute(
             "INSERT INTO post_fts (slug, title, body) "
             "SELECT slug, title, body_markdown FROM blog_post "
-            "WHERE is_active = 1 AND status = %s",
-            [Status.PUBLISHED.value],
+            f"WHERE is_active = 1 AND status = %s AND slug NOT IN ({placeholders})",
+            [Status.PUBLISHED.value, *reserved],
         )
 
 

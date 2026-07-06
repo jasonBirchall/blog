@@ -8,7 +8,7 @@ import datetime
 
 from django.contrib.sitemaps import Sitemap
 
-from blog.enums import Status
+from blog.enums import RESERVED_SLUGS, Status
 from blog.models import Post, Tag
 
 
@@ -18,9 +18,9 @@ class PostSitemap(Sitemap):
 
     def items(self) -> list[Post]:
         return list(
-            Post.objects.filter(is_active=True, status=Status.PUBLISHED.value).order_by(
-                "-date", "-id"
-            )
+            Post.objects.filter(is_active=True, status=Status.PUBLISHED.value)
+            .exclude(slug__in=RESERVED_SLUGS)
+            .order_by("-date", "-id")
         )
 
     def location(self, item) -> str:
@@ -43,3 +43,16 @@ class TagSitemap(Sitemap):
 
     def location(self, item) -> str:
         return f"/tags/{item.slug}"
+
+
+class StaticSitemap(Sitemap):
+    """Hand-authored top-level pages that are not posts (e.g. /now)."""
+
+    changefreq = "monthly"
+    priority = 0.5
+
+    def items(self) -> list[str]:
+        return ["/now"]
+
+    def location(self, item) -> str:
+        return item

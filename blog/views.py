@@ -4,7 +4,7 @@ from django.db.models import Count, Q
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
-from blog.enums import Status
+from blog.enums import RESERVED_SLUGS, Status
 from blog.models import Post, Tag
 from blog.search import search_posts
 
@@ -13,7 +13,7 @@ _PUBLISHED = Q(is_active=True, status=Status.PUBLISHED.value)
 
 
 def _published_posts():
-    return Post.objects.filter(_PUBLISHED).order_by("-date", "-id")
+    return Post.objects.filter(_PUBLISHED).exclude(slug__in=RESERVED_SLUGS).order_by("-date", "-id")
 
 
 def home(request: HttpRequest) -> HttpResponse:
@@ -38,7 +38,11 @@ def archive(request: HttpRequest) -> HttpResponse:
 
 
 def tag_index(request: HttpRequest) -> HttpResponse:
-    published_for_tag = Q(posts__is_active=True, posts__status=Status.PUBLISHED.value)
+    # Exclude reserved slugs from the count too: _published_posts covers the
+    # listing queries, but this annotation counts posts on its own path.
+    published_for_tag = Q(posts__is_active=True, posts__status=Status.PUBLISHED.value) & ~Q(
+        posts__slug__in=RESERVED_SLUGS
+    )
     tags = (
         Tag.objects.annotate(count=Count("posts", filter=published_for_tag))
         .filter(count__gt=0)
