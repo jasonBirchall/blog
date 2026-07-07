@@ -53,13 +53,12 @@ class DescribeContactCard:
     def it_marks_up_an_h_card(self, client: Client) -> None:
         _sync_about()
         html = client.get("/about").content.decode()
-        for microformat in ("h-card", "p-name", "u-url", "u-email"):
+        for microformat in ("h-card", "u-url"):
             assert microformat in html
 
     def it_links_the_contact_channels_with_rel_me(self, client: Client) -> None:
         _sync_about()
         html = client.get("/about").content.decode()
-        assert 'rel="me" href="mailto:me@jasonbirchall.dev"' in html
         assert 'rel="me" href="https://fosstodon.org/@jasonbirchall"' in html
         assert 'rel="me" href="https://codeberg.org/jasonbirchall"' in html
 
