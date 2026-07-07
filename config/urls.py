@@ -12,6 +12,7 @@ from django.views.generic.base import RedirectView
 from blog.feeds import PostFeed
 from blog.sitemaps import PostSitemap, StaticSitemap, TagSitemap
 from blog.views import (
+    about,
     archive,
     home,
     now,
@@ -26,6 +27,7 @@ _SITEMAPS = {"posts": PostSitemap, "tags": TagSitemap, "static": StaticSitemap}
 
 urlpatterns = [
     path("", home, name="home"),
+    path("about", about, name="about"),
     path("now", now, name="now"),
     # Reserved slugs: wikilinks resolve [[now]]/[[about]] to /posts/<slug>;
     # redirect each to its top-level page. Must precede the generic slug pattern

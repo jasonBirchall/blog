@@ -1,0 +1,13 @@
+{% comment %}
+The machine-readable half of /about: an h-card with rel="me" links. Static
+template, so nh3 never sees these microformat classes (they'd be stripped from
+synced content). The visible rel="me" to Fosstodon is what earns the verified
+tick on the Mastodon profile; the invisible one in base.html's head stays.
+{% endcomment %}
+<section class="contact-card h-card" aria-labelledby="contact-heading">
+  <h2 id="contact-heading">Contact &amp; elsewhere</h2>
+  <ul>
+    <li><a class="u-url" rel="me" href="https://fosstodon.org/@jasonbirchall">Mastodon</a></li>
+    <li><a class="u-url" rel="me" href="https://codeberg.org/jasonbirchall">Codeberg</a></li>
+  </ul>
+</section>

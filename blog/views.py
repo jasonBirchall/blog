@@ -71,6 +71,13 @@ def now(request: HttpRequest) -> HttpResponse:
     return render(request, "now.html", {"post": post, "stats": stats, "fetched_at": fetched_at})
 
 
+def about(request: HttpRequest) -> HttpResponse:
+    # As with now(), existence is authored: 404 if content/about.md is absent or
+    # draft. No data pipeline — the contact h-card lives in the template.
+    post = get_object_or_404(Post, slug="about", is_active=True, status=Status.PUBLISHED.value)
+    return render(request, "about.html", {"post": post})
+
+
 def robots_txt(request: HttpRequest) -> HttpResponse:
     if settings.IS_PREVIEW:
         body = "User-agent: *\nDisallow: /\n"

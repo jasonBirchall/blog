@@ -239,5 +239,10 @@ img { max-width: 100%; height: auto; }
 .stat-track { width: 45%; }
 .stat-bar { display: block; height: 0.6rem; min-width: 1px; background: var(--muted); border-radius: 1px; }
 
+/* About page: contact h-card, set off from the bio like the now-stats block. */
+.contact-card { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); }
+.contact-card ul { list-style: none; padding: 0; font-family: var(--sans); font-size: 0.95rem; }
+.contact-card li { margin: 0 0 0.3rem; }
+
 /* Visible focus ring for keyboard users. */
 :focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }

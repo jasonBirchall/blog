@@ -58,6 +58,13 @@ class DescribeBaseTemplate:
     def it_links_the_now_page_in_the_masthead(self, client: Client) -> None:
         assert '<a href="/now">Now</a>' in _html(client)
 
+    def it_links_the_about_page_in_the_masthead(self, client: Client) -> None:
+        assert '<a href="/about">About</a>' in _html(client)
+
+    def it_orders_about_before_now_in_the_nav(self, client: Client) -> None:
+        html = _html(client)
+        assert html.index('href="/about"') < html.index('href="/now"')
+
 
 class DescribeHtml5Validity:
     def it_parses_with_no_html5_errors(self, client: Client) -> None:
