@@ -7,7 +7,7 @@ tags: []
 status: published
 ---
 
-I’m Jason Birchall. I’m a student of systems: how they work, how they fail and what, if any, failures can teach us. I’m also a technologist who cares about reliability and about keeping the software people depend on safe.
+I'm Jason Birchall. I'm a student of systems: how they work, how they fail and what, if any, failures can teach us. I'm also a technologist who cares about reliability and about keeping the software people depend on safe.
 
 ## What I do
 
