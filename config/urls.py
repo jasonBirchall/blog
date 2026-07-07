@@ -27,9 +27,11 @@ _SITEMAPS = {"posts": PostSitemap, "tags": TagSitemap, "static": StaticSitemap}
 urlpatterns = [
     path("", home, name="home"),
     path("now", now, name="now"),
-    # Reserved slug: wikilinks resolve [[now]] to /posts/now; redirect it to the
-    # top-level page. Must precede the generic slug pattern to win the match.
+    # Reserved slugs: wikilinks resolve [[now]]/[[about]] to /posts/<slug>;
+    # redirect each to its top-level page. Must precede the generic slug pattern
+    # to win the match. (The /about view lands in A.2; the redirect stands alone.)
     path("posts/now", RedirectView.as_view(url="/now", permanent=True)),
+    path("posts/about", RedirectView.as_view(url="/about", permanent=True)),
     path("posts/<slug:slug>", post_detail, name="post"),
     path("tags/", tag_index, name="tags"),
     path("tags/<slug:slug>", tag_detail, name="tag"),

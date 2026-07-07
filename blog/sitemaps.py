@@ -46,13 +46,13 @@ class TagSitemap(Sitemap):
 
 
 class StaticSitemap(Sitemap):
-    """Hand-authored top-level pages that are not posts (e.g. /now)."""
+    """Hand-authored top-level pages that are not posts (e.g. /now, /about)."""
 
     changefreq = "monthly"
     priority = 0.5
 
     def items(self) -> list[str]:
-        return ["/now"]
+        return ["/now", "/about"]
 
     def location(self, item) -> str:
         return item
