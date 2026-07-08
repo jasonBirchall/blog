@@ -7,17 +7,15 @@ tags: []
 status: published
 ---
 
-I'm Jason Birchall. I'm a student of systems: how they work, how they fail and what, if any, failures can teach us. I'm also a technologist who cares about reliability and about keeping the software people depend on safe.
+I'm Jason Birchall. I'm a student of complex systems: how they work, how they fail and what failures can teach us. I'm also a technologist who cares about reliability and about keeping the software people depend on safe.
 
 ## What I do
 
-Most of my work is building internal tools: the deploy pipelines, paved roads, and sensible defaults that other engineers stand on. For the last few years that's meant leading site reliability engineering for GOV.UK, trying my best to make platform engineering work. Maybe that doesn't sound thrilling, but I think it's some of the highest-leverage work in software: every rough edge you sand off a deploy pipeline is sanded off for every team that uses it, forever.
-
-In August 2026 I'm joining Mozilla as a staff engineer to keep doing it. From September I'll also be studying systems engineering management at UCL, because tools are only half of it: the other half is the people using them.
+Most of my work is building internal tools for development teams (read Platform Engineering). Things like deploy pipelines, paved roads, and sensible defaults that make engineering organisations faster and safer. For the last few years that's meant leading site reliability engineering (SRE) for GOV.UK, trying my best to make platform engineering work in a large organisation with a high throughput site. In August 2026 I'm joining Mozilla as a staff engineer to work on their extensions ecosystem. It'll be something a little different, but I'll look at leaning on my experience building good quality software and software teams.
 
 ## Disclosures
 
-The views here are mine. I've worked for organisations whose work I care about, GOV.UK now and Mozilla from August, but nothing on this site is written on their behalf, and nothing has been reviewed or approved by them. If a post is wrong, it's wrong because of me.
+The views here are mine. I've worked for organisations whose work I care about, GOV.UK now and Mozilla from August, but nothing on this site is written on their behalf, and nothing has been reviewed or approved by them. If a post is wrong, it's wrong because of me. Feel free to shout or debate me using the Mastodon link below. I'd love to hear your thoughts.
 
 Nothing here is sponsored. Nobody has paid me to write about a product, a tool, or anything else, and there are no affiliate links. I mention tools because I use them. If that ever changes, I'll disclose it in the post itself and note it here.
 
