@@ -1,4 +1,11 @@
-# Trying out detection engineering
+---
+title: Trying out detection engineering
+slug: trying-out-detection-engineering
+date: 2026-07-25
+kind: essay
+tags: [software-engineering]
+status: published
+---
 
 _Detection engineering at laptop scale, with auditd, Sigma, and Atomic Red Team._
 
@@ -45,26 +52,26 @@ Here's the highest-severity rule, the one watching `authorized_keys`:
 title: SSH authorized_keys Written Or Deleted
 status: experimental
 description: >
-  A PATH record under the ssh-tamper watch touched an authorized_keys file.
-  Adding a key here grants persistent remote access, so this fires on any
-  writer — including tools allowlisted by the companion SYSCALL rules.
+    A PATH record under the ssh-tamper watch touched an authorized_keys file.
+    Adding a key here grants persistent remote access, so this fires on any
+    writer — including tools allowlisted by the companion SYSCALL rules.
 references:
-  - https://attack.mitre.org/techniques/T1098/004/
+    - https://attack.mitre.org/techniques/T1098/004/
 tags:
-  - attack.persistence
-  - attack.t1098.004
+    - attack.persistence
+    - attack.t1098.004
 logsource:
-  product: linux
-  service: auditd
+    product: linux
+    service: auditd
 detection:
-  selection:
-    type: PATH
-    name|contains: authorized_keys
-  filter_parent_dir:
-    nametype: PARENT
-  condition: selection and not filter_parent_dir
+    selection:
+        type: PATH
+        name|contains: authorized_keys
+    filter_parent_dir:
+        nametype: PARENT
+    condition: selection and not filter_parent_dir
 falsepositives:
-  - Deliberately adding a key for a new machine
+    - Deliberately adding a key for a new machine
 level: high
 ```
 
