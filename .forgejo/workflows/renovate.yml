@@ -45,7 +45,7 @@ jobs:
         run: echo "RENOVATE_DRY_RUN=full" >> "$FORGEJO_ENV"
 
       - name: Run Renovate
-        uses: docker://ghcr.io/renovatebot/renovate@sha256:38aac6e29e09288bc3fb3b95ba9445962508a1081013144d5b6ec5a6735707b9 # 43.168.5
+        uses: docker://ghcr.io/renovatebot/renovate@sha256:c1cb952b2e14a112d0d0c61987a10f60a2626fe9b9c1504436be46a17bd123bc # 43.168.5
         env:
           RENOVATE_CONFIG_FILE: renovate.json
           RENOVATE_PLATFORM: forgejo
