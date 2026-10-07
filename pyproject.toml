@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 license = "MIT"
 authors = [{ name = "Jason Birchall", email = "me@jasonbirchall.dev" }]
 dependencies = [
-    "django>=5.2,<5.3",
+    "django>=5.2.17,<5.3",
     "markdown-it-py>=4.2.0",
     "mdit-py-plugins>=0.6.1",
     "nh3>=0.3.5",
