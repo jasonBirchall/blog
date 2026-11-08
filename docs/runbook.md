@@ -97,7 +97,7 @@ while read -r sops_key pod_name; do
 done <<'EOF'
 django_secret_key                django_secret_key
 proton_smtp_token                proton_smtp_token
-wakatime_api_key                 wakatime_api_key
+wakatime_oauth_token                 wakatime_oauth_token
 TF_VAR_object_storage_access_key object_storage_access_key
 TF_VAR_object_storage_secret_key object_storage_secret_key
 EOF
@@ -177,7 +177,7 @@ systemctl --user enable --now blog-deploy.timer
 
 **3i. Observability (N6.7)** — see `deploy/observability/README.md` (TODO once landed).
 
-**3j. WakaTime stats sync** (the `/now` page's stats; N.7). The `wakatime_api_key`
+**3j. WakaTime stats sync** (the `/now` page's stats; N.7). The `wakatime_oauth_token`
 podman secret is already created in 3b. Create the metric directory the sync
 writes to (node-exporter reads it read-only, so it must be **writable by the
 `blog` user**), install the daily timer, and force the first run:
@@ -318,18 +318,20 @@ Runs the daily sync now instead of waiting for the timer. On success it upserts
 the one `WakaSnapshot` row and bumps the freshness metric; on failure it exits
 non-zero and leaves the previous row and metric untouched — stale beats broken.
 
-### Rotate the WakaTime key
+### Rotate the WakaTime token
 
-Regenerate at wakatime.com/api-key, update the sops file, then swap the podman
+Regenerate at wakatime.com/oauth (personal OAuth token — API keys are write-only
+since Nov 2026 and return 403 on reads), update the sops file, then swap the podman
 secret. **No app restart** is needed — the sync is a one-shot that reads the
 secret fresh each run, so the next run (or a forced one) picks up the new value:
 
 ```sh
-make secrets-edit                      # set wakatime_api_key to the new value; save re-encrypts
-ssh blog 'podman secret rm wakatime_api_key'
-sops -d --extract '["wakatime_api_key"]' deploy/secrets/secrets.sops.yaml | tr -d '\n' \
-  | ssh blog 'podman secret create wakatime_api_key -'
-ssh blog 'systemctl --user start blog-wakatime.service'   # confirm the new key works
+make secrets-edit                      # set wakatime_oauth_token to the new value; save re-encrypts
+ssh blog 'podman secret rm wakatime_oauth_token'
+sops -d --extract '["wakatime_oauth_token"]' deploy/secrets/secrets.sops.yaml | tr -d '\n' \
+  | ssh blog 'podman secret create wakatime_oauth_token -'
+ssh blog 'podman secret ls | grep wakatime'               # a piped create can fail silently; check it landed
+ssh blog 'systemctl --user start blog-wakatime.service'   # confirm the new token works
 ```
 
 ### The WakaTimeStale alert
@@ -344,7 +346,7 @@ ssh blog 'systemctl --user status blog-wakatime.service'
 ssh blog 'journalctl --user -u blog-wakatime -n 50 --no-pager'
 ```
 
-Most likely a revoked/expired key (check wakatime.com/api-key; rotate above) or a
+Most likely a revoked/expired token (test it with curl from the laptop; rotate above) or a
 WakaTime outage.
 
 **Rule changes need a Prometheus reload.** A deploy lands a changed `rules.yml` on

@@ -140,7 +140,7 @@ class DescribeHostileNames:
 
 
 class DescribeFetch:
-    def it_hits_the_stats_endpoint_with_the_key(self) -> None:
+    def it_hits_the_stats_endpoint_with_the_token(self) -> None:
         calls: list[tuple[str, str]] = []
         body = fetch_stats("secret-key", fetch=lambda url, key: calls.append((url, key)) or RAW)
         assert len(calls) == 1

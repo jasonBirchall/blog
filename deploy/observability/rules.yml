@@ -81,5 +81,5 @@ groups:
           summary: "WakaTime sync stale (> 48h since last success)"
           description: >-
             ssh blog; systemctl --user status blog-wakatime.service;
-            journalctl --user -u blog-wakatime -n 50. Check key validity at
-            wakatime.com/api-key; rotate per the runbook if revoked.
+            journalctl --user -u blog-wakatime -n 50. Test the stored token with
+            curl from the laptop (status code only); rotate per the runbook if 401/403.

@@ -5,7 +5,7 @@ deploy timer so stats refresh even when `main` has not moved:
 
     uv run python manage.py sync_wakatime
 
-Reads WAKATIME_API_KEY from the environment (never argv, never logged). Any
+Reads WAKATIME_OAUTH_TOKEN from the environment (never argv, never logged). Any
 failure exits non-zero via CommandError and leaves the existing snapshot
 untouched — stale data beats broken data.
 """
@@ -24,11 +24,11 @@ class Command(BaseCommand):
     help = "Fetch the last 7 days of WakaTime stats and upsert the snapshot."
 
     def handle(self, *args: Any, **options: Any) -> None:
-        api_key = os.environ.get("WAKATIME_API_KEY")
-        if not api_key:
-            raise CommandError("WAKATIME_API_KEY is not set")
+        token = os.environ.get("WAKATIME_OAUTH_TOKEN")
+        if not token:
+            raise CommandError("WAKATIME_OAUTH_TOKEN is not set")
         try:
-            stats = parse_stats(fetch_stats(api_key))
+            stats = parse_stats(fetch_stats(token))
         except (WakaStatsError, OSError) as exc:
             # OSError covers urllib's URLError/timeout; the row is left as-is.
             raise CommandError(f"WakaTime sync failed: {exc}") from exc

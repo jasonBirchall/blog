@@ -2,7 +2,7 @@
 # WakaTime stats sync one-shot (N.7). Invoked daily by blog-wakatime.timer (user
 # scope), decoupled from the deploy timer: deploys fire only when main moves, but
 # stats must refresh regardless. Runs manage.py sync_wakatime against the live
-# db.sqlite3 in the shared blog-db volume, using the wakatime_api_key podman
+# db.sqlite3 in the shared blog-db volume, using the wakatime_oauth_token podman
 # secret. On success, writes a freshness metric to the node_exporter textfile
 # collector (N.8); on failure, exits non-zero and writes nothing — staleness is
 # the signal, surfaced by the WakaTimeStale alert.
@@ -28,7 +28,7 @@ podman run --rm \
   --env DATABASE_PATH=/app/data/db.sqlite3 \
   --env DJANGO_SETTINGS_MODULE=config.settings.prod \
   --secret django_secret_key,type=env,target=DJANGO_SECRET_KEY \
-  --secret wakatime_api_key,type=env,target=WAKATIME_API_KEY \
+  --secret wakatime_oauth_token,type=env,target=WAKATIME_OAUTH_TOKEN \
   "$IMAGE" \
   sh -c "uv run --no-sync python manage.py sync_wakatime"
 

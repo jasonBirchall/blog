@@ -15,7 +15,6 @@ injected callable (as in `snapshots.py`) so no spec touches the network;
 formatting lives here too, so templates stay logic-free.
 """
 
-import base64
 import urllib.request
 from collections.abc import Callable, Iterable
 from datetime import date, datetime
@@ -160,13 +159,14 @@ def parse_stats(raw: str, *, hidden_projects: frozenset[str] = frozenset()) -> W
         raise WakaStatsError(f"Invalid WakaTime stats response: {exc}") from exc
 
 
-def _default_fetch(url: str, api_key: str) -> str:
-    token = base64.b64encode(api_key.encode("utf-8")).decode("ascii")
-    request = urllib.request.Request(url, headers={"Authorization": f"Basic {token}"})
+def _default_fetch(url: str, token: str) -> str:
+    # WakaTime API keys are write-only (plugins); reads need an OAuth token,
+    # sent as a bearer credential (ADR-0005 amendment, 2026-11-08).
+    request = urllib.request.Request(url, headers={"Authorization": f"Bearer {token}"})
     with urllib.request.urlopen(request, timeout=_TIMEOUT_SECONDS) as response:
         return response.read().decode("utf-8")
 
 
-def fetch_stats(api_key: str, *, fetch: Fetch = _default_fetch) -> str:
+def fetch_stats(token: str, *, fetch: Fetch = _default_fetch) -> str:
     """Fetch the raw last-7-days stats response. Network is injected for specs."""
-    return fetch(_STATS_URL, api_key)
+    return fetch(_STATS_URL, token)

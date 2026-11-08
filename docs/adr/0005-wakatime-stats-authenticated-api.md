@@ -78,3 +78,28 @@ data out of git.**
 - Reversible: switching to embed URLs later deletes the secret from the box
   and swaps the fetch, leaving the domain, storage, template, and alerting
   untouched — at which point this ADR is superseded.
+
+## Amendment 2026-11-08: OAuth token, not API key
+
+Around 1 November 2026 WakaTime made API keys write-only — valid only for
+plugins submitting heartbeats — and `users/current/stats` began returning
+`403 "API Keys are only for plugins, use your personal oauth token"`. The
+daily sync failed for a week; `/now` served its 1 November snapshot under an
+honest "as of" date and `WakaTimeStale` fired, exactly as designed.
+
+The credential is now a **personal OAuth token** (wakatime.com/oauth; no OAuth
+app registration needed) sent as `Authorization: Bearer`. The secret, env var
+and parameter were renamed to say so: `wakatime_oauth_token` /
+`WAKATIME_OAUTH_TOKEN` / `token`. The decision itself stands: authenticated
+fetch, hostile-response parsing, data kept out of git.
+
+What changes in the consequences:
+
+- **Blast radius narrows.** The old key could also submit fake heartbeats; an
+  OAuth token is read-scoped to what the account grants it, so a leak reads
+  but cannot write history. Still read access to the whole account.
+- **Expiry is an open question.** The personal-token page does not state a
+  lifetime. If it expires, the failure mode is the same staleness path, and
+  the sops example asks for the expiry to be recorded next to the value.
+- **Rotation gained a verification step.** A piped `podman secret create`
+  can fail silently; the runbook now lists secrets after creating one.

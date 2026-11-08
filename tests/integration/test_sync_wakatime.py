@@ -1,8 +1,8 @@
 """Integration specs for the sync_wakatime command (network injected via patch).
 
-The command is a thin adapter: read the key from the environment, fetch, parse,
+The command is a thin adapter: read the token from the environment, fetch, parse,
 and upsert the one snapshot. Any failure must exit non-zero (CommandError) and
-leave the previous row intact — stale beats broken. The key must never surface
+leave the previous row intact — stale beats broken. The token must never surface
 in output.
 """
 
@@ -24,8 +24,8 @@ _FETCH = "blog.management.commands.sync_wakatime.fetch_stats"
 
 
 @pytest.fixture(autouse=True)
-def _api_key(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("WAKATIME_API_KEY", "secret-key")
+def _oauth_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("WAKATIME_OAUTH_TOKEN", "secret-key")
 
 
 def _seed_previous_row() -> WakaSnapshot:
@@ -51,8 +51,8 @@ class DescribeSuccess:
 
 class DescribeMissingKey:
     def it_errors_when_the_key_is_unset(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        monkeypatch.delenv("WAKATIME_API_KEY", raising=False)
-        with pytest.raises(CommandError, match="WAKATIME_API_KEY"):
+        monkeypatch.delenv("WAKATIME_OAUTH_TOKEN", raising=False)
+        with pytest.raises(CommandError, match="WAKATIME_OAUTH_TOKEN"):
             call_command("sync_wakatime")
 
 
