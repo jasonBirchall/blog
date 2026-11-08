@@ -18,7 +18,10 @@ ssh_authorized_key = "ssh-ed25519 AAAA... you@laptop" # TODO
 # --- Object Storage ---
 object_storage_endpoint = "https://hel1.your-objectstorage.com" # TODO confirm
 object_storage_region   = "hel1"
-bucket_name             = "jasonbirchall-blog" # TODO confirm/choose
+# Must match the bucket already in state, deploy/litestream/litestream.yml and
+# the state backend (Makefile TOFU_STATE_BUCKET). A different name here makes
+# `tofu plan` propose destroying and recreating the Litestream backup bucket.
+bucket_name             = "jasonbirchall-blog-litestream"
 
 # --- DNS ---
 # Only the apex A/AAAA are managed by tofu (they point at the new box). Mail
